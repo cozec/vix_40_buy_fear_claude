@@ -43,6 +43,20 @@ BG = "#1a2029"; GRID = "#2d333b"; INK = "#e6edf3"; MUTED = "#9aa7b4"
 UP = "#3fb950"; DOWN = "#f85149"; ORANGE = "#f0883e"; BLUE = "#58a6ff"; GREY = "#6e7681"
 PAD = pd.Timedelta(days=21)
 
+# Macro "panic reason" behind each trade's signal (by trade number).
+PANIC = {
+    1: "2010 闪崩 / 欧债危机",
+    2: "2011 美债降级 / 欧债危机",
+    3: "2015 人民币贬值 / 中国股灾",
+    4: "2016 美国大选前抛售",
+    5: "2018 美联储加息抛售",
+    6: "2020 新冠疫情崩盘",
+    7: "2022 通胀加息熊市",
+    8: "2023 美债收益率飙升",
+    9: "2025 关税冲击",
+    10: "2026 年 3 月回调",
+}
+
 
 def style_ax(ax):
     ax.set_facecolor(BG)
@@ -115,10 +129,13 @@ def main():
             exit_lbl = "持仓中"
 
         status = "（持仓中）" if is_open else ""
+        panic = PANIC.get(num)
+        head = f"交易 #{num}" + (f"  ·  {panic}" if panic else "")
         ax1.set_title(
-            f"交易 #{num}  ·  {t['Trigger']}  ·  收益 {t['Return_%']:+.1f}%{status}\n"
-            f"信号 {sig:%Y-%m-%d}   买入 {ent:%Y-%m-%d}   卖出 {exit_lbl}   "
-            f"持有 {int(t['Hold_Days'])} 天", color=INK, fontsize=12, pad=12)
+            f"{head}  ·  收益 {t['Return_%']:+.1f}%{status}\n"
+            f"触发 {t['Trigger']}   信号 {sig:%Y-%m-%d}   买入 {ent:%Y-%m-%d}   "
+            f"卖出 {exit_lbl}   持有 {int(t['Hold_Days'])} 天",
+            color=INK, fontsize=12, pad=12)
         ax1.set_ylabel("TQQQ 价格 ($)", color=MUTED, fontsize=10)
 
         # --- trigger 1: VIX ---
