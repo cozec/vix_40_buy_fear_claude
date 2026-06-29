@@ -145,10 +145,15 @@ def main():
         panic = PANIC.get(num)
         head = f"交易 #{num}" + (f"  ·  {panic}" if panic else "")
         ax1.set_title(
-            f"{head}  ·  收益 {t['Return_%']:+.1f}%  ·  最大回撤 {max_dd:.1f}%{status}\n"
+            f"{head}  ·  收益 {t['Return_%']:+.1f}%{status}\n"
             f"触发 {t['Trigger']}   信号 {sig:%Y-%m-%d}   买入 {ent:%Y-%m-%d}   "
             f"卖出 {exit_lbl}   持有 {int(t['Hold_Days'])} 天",
             color=INK, fontsize=12, pad=12)
+        # highlighted max-drawdown badge (red), bottom-right empty area
+        ax1.text(0.987, 0.04, f"最大回撤 {max_dd:.1f}%", transform=ax1.transAxes,
+                 ha="right", va="bottom", fontsize=12, fontweight="bold", color="white",
+                 bbox=dict(boxstyle="round,pad=0.35", facecolor=DOWN, edgecolor="white", lw=0.7),
+                 zorder=20)
         ax1.set_ylabel("TQQQ 价格 ($)", color=MUTED, fontsize=10)
 
         # --- trigger 1: VIX ---
