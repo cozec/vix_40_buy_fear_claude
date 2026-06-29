@@ -30,6 +30,7 @@ def _series(s):
 
 def build_payload():
     df = bt.build_signals()
+    tqqq = bt.load_yf(os.path.join(bt.DATA, "tqqq_data.csv")).reindex(df.index)
     trades, equity = bt.run_backtest(df)
     tqqq_bh = bt.buy_hold_equity(df["tqqq_close"])
     m = bt.metrics(equity, tqqq_bh.pct_change().dropna())
@@ -82,6 +83,9 @@ def build_payload():
     return {
         "dates": [d.strftime("%Y-%m-%d") for d in df.index],
         "tqqq": _series(df["tqqq_close"]),
+        "tqqq_open": _series(tqqq["Open"]),
+        "tqqq_high": _series(tqqq["High"]),
+        "tqqq_low": _series(tqqq["Low"]),
         "vix": _series(df["vix_close"]),
         "rsi": _series(df["weekly_rsi"]),
         "trades": trade_list,
@@ -163,7 +167,7 @@ PAGE = r"""
     <div class="card"><h3>当前读数</h3><div id="readings"></div></div>
   </div>
 
-  <div id="chart" style="height:760px"></div>
+  <div id="chart" style="height:1040px"></div>
   <div class="foot">数据本地读取，刷新页面即更新 · Plotly 交互图：拖拽缩放、滚轮缩放、上方按钮切换区间</div>
 </div>
 
@@ -211,18 +215,36 @@ D.trades.forEach(t=>{
     exitT.push(`卖出 $${t.exit_price}<br>收益 ${t.ret>=0?'+':''}${t.ret}%`); }
 });
 
-const price = {x:dates,y:D.tqqq,type:'scatter',mode:'lines',name:'TQQQ',
-  line:{color:'#58a6ff',width:1.3},xaxis:'x',yaxis:'y',hovertemplate:'%{x}<br>$%{y}<extra>TQQQ</extra>'};
+const price = {x:dates,open:D.tqqq_open,high:D.tqqq_high,low:D.tqqq_low,close:D.tqqq,
+  type:'candlestick',name:'TQQQ',xaxis:'x',yaxis:'y',
+  increasing:{line:{color:'#3fb950'},fillcolor:'#3fb950'},
+  decreasing:{line:{color:'#f85149'},fillcolor:'#f85149'}};
 const entry = {x:entryX,y:entryY,type:'scatter',mode:'markers',name:'买入',
-  marker:{color:'#3fb950',symbol:'triangle-up',size:11,line:{color:'#fff',width:1}},
+  marker:{color:'#3fb950',symbol:'triangle-up',size:13,line:{color:'#fff',width:1}},
   text:entryT,hovertemplate:'%{text}<extra></extra>',xaxis:'x',yaxis:'y'};
 const exit = {x:exitX,y:exitY,type:'scatter',mode:'markers',name:'卖出',
-  marker:{color:'#f85149',symbol:'triangle-down',size:11,line:{color:'#fff',width:1}},
+  marker:{color:'#f85149',symbol:'triangle-down',size:13,line:{color:'#fff',width:1}},
   text:exitT,hovertemplate:'%{text}<extra></extra>',xaxis:'x',yaxis:'y'};
 const vix = {x:dates,y:D.vix,type:'scatter',mode:'lines',name:'VIX',
   line:{color:'#f0883e',width:1},xaxis:'x',yaxis:'y2',hovertemplate:'%{x}<br>VIX %{y}<extra></extra>'};
 const rsi = {x:dates,y:D.rsi,type:'scatter',mode:'lines',name:'标普 RSI(14)',
   line:{color:'#58a6ff',width:1},xaxis:'x',yaxis:'y3',hovertemplate:'%{x}<br>RSI %{y}<extra></extra>'};
+
+/* textbox markers for entry/exit on the trigger panels (VIX=y2, RSI=y3) */
+const trigAnn=[];
+function tbox(x,y,yref,txt,color){
+  return {x:x,y:y,xref:'x',yref:yref,text:txt,showarrow:false,
+    font:{size:9,color:'#fff'},bgcolor:color,bordercolor:'#0f1419',borderwidth:1,
+    borderpad:2,opacity:0.95};
+}
+D.trades.forEach(t=>{
+  const ei=dates.indexOf(t.entry_date);
+  if(ei>=0){ if(D.vix[ei]!=null) trigAnn.push(tbox(t.entry_date,D.vix[ei],'y2','买','#3fb950'));
+             if(D.rsi[ei]!=null) trigAnn.push(tbox(t.entry_date,D.rsi[ei],'y3','买','#3fb950')); }
+  if(!t.open){ const xi=dates.indexOf(t.exit_date);
+    if(xi>=0){ if(D.vix[xi]!=null) trigAnn.push(tbox(t.exit_date,D.vix[xi],'y2','卖','#f85149'));
+               if(D.rsi[xi]!=null) trigAnn.push(tbox(t.exit_date,D.rsi[xi],'y3','卖','#f85149')); } }
+});
 
 const lastDate = dates[dates.length-1];
 const d1y = new Date(lastDate); d1y.setFullYear(d1y.getFullYear()-1);
@@ -230,29 +252,63 @@ const init = d1y.toISOString().slice(0,10);
 
 const layout = {
   paper_bgcolor:'#1a2029', plot_bgcolor:'#1a2029', font:{color:'#9aa7b4',size:12},
-  showlegend:true, legend:{orientation:'h',y:1.04,x:0,font:{color:'#e6edf3'}},
+  showlegend:true, legend:{orientation:'h',y:1.03,x:0,font:{color:'#e6edf3'}},
   margin:{l:55,r:20,t:10,b:30}, hovermode:'x unified', dragmode:'zoom',
+  annotations:trigAnn,
   xaxis:{domain:[0,1],anchor:'y3',gridcolor:'#2d333b',range:[init,lastDate],
+    rangeslider:{visible:false},
     rangeselector:{bgcolor:'#0f1419',activecolor:'#f0883e',bordercolor:'#2d333b',borderwidth:1,
-      font:{color:'#e6edf3'},x:0,y:1.12,
+      font:{color:'#e6edf3'},x:0,y:1.10,
       buttons:[
         {count:3,label:'3M',step:'month',stepmode:'backward'},
         {count:6,label:'6M',step:'month',stepmode:'backward'},
         {count:1,label:'1Y',step:'year',stepmode:'backward'},
         {count:3,label:'3Y',step:'year',stepmode:'backward'},
         {step:'all',label:'Max'}]}},
-  yaxis:{domain:[0.46,1],title:'TQQQ 价格 ($)',type:'log',gridcolor:'#2d333b'},
-  yaxis2:{domain:[0.24,0.42],title:'VIX',gridcolor:'#2d333b'},
-  yaxis3:{domain:[0.02,0.20],title:'RSI(14)',gridcolor:'#2d333b'},
+  yaxis:{domain:[0.42,1],title:'TQQQ 价格 ($)',type:'log',gridcolor:'#2d333b'},
+  yaxis2:{domain:[0.22,0.39],title:'VIX',gridcolor:'#2d333b'},
+  yaxis3:{domain:[0.02,0.19],title:'RSI(14)',gridcolor:'#2d333b'},
   shapes:[
     {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:D.thresholds.vix,y1:D.thresholds.vix,
       line:{color:'#f85149',width:1,dash:'dash'}},
     {type:'line',xref:'paper',x0:0,x1:1,yref:'y3',y0:D.thresholds.rsi,y1:D.thresholds.rsi,
       line:{color:'#f85149',width:1,dash:'dash'}}],
 };
-Plotly.newPlot('chart',[price,entry,exit,vix,rsi],layout,
+
+const gd=document.getElementById('chart');
+let scaling=false;
+function autoscaleY(full){
+  let x0=-Infinity,x1=Infinity;
+  if(!full){ const xr=gd.layout.xaxis&&gd.layout.xaxis.range;
+    if(xr){ x0=new Date(xr[0]).getTime(); x1=new Date(xr[1]).getTime(); } }
+  let pl=Infinity,ph=-Infinity,vl=Infinity,vh=-Infinity,rl=Infinity,rh=-Infinity;
+  for(let i=0;i<dates.length;i++){
+    const tm=new Date(dates[i]).getTime();
+    if(tm<x0||tm>x1) continue;
+    const lo=D.tqqq_low[i],hi=D.tqqq_high[i];
+    if(lo!=null&&lo<pl)pl=lo; if(hi!=null&&hi>ph)ph=hi;
+    const v=D.vix[i]; if(v!=null){if(v<vl)vl=v;if(v>vh)vh=v;}
+    const r=D.rsi[i]; if(r!=null){if(r<rl)rl=r;if(r>rh)rh=r;}
+  }
+  if(!isFinite(pl)||!isFinite(ph)) return;
+  const upd={'yaxis.range':[Math.log10(pl*0.95),Math.log10(ph*1.05)]};
+  if(isFinite(vl)){ const lo=Math.min(vl,D.thresholds.vix),hi=Math.max(vh,D.thresholds.vix),
+    p=Math.max(1,(hi-lo)*0.1); upd['yaxis2.range']=[Math.max(0,lo-p),hi+p]; }
+  if(isFinite(rl)){ const lo=Math.min(rl,D.thresholds.rsi),hi=Math.max(rh,D.thresholds.rsi),
+    p=Math.max(1,(hi-lo)*0.1); upd['yaxis3.range']=[lo-p,hi+p]; }
+  scaling=true; Plotly.relayout(gd,upd).then(()=>{scaling=false;});
+}
+
+Plotly.newPlot(gd,[price,entry,exit,vix,rsi],layout,
   {scrollZoom:true,responsive:true,displaylogo:false,
-   modeBarButtonsToRemove:['lasso2d','select2d']});
+   modeBarButtonsToRemove:['lasso2d','select2d']}).then(()=>{
+  autoscaleY(false);
+  gd.on('plotly_relayout',(ev)=>{
+    if(scaling) return;
+    if('xaxis.autorange' in ev) autoscaleY(true);
+    else if(('xaxis.range[0]' in ev)||('xaxis.range' in ev)) autoscaleY(false);
+  });
+});
 </script>
 </body>
 </html>
