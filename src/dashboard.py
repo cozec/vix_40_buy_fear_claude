@@ -163,8 +163,6 @@ PAGE = r"""
     <div class="card"><h3>当前读数</h3><div id="readings"></div></div>
   </div>
 
-  <div class="grid" id="metrics"></div>
-
   <div id="chart" style="height:760px"></div>
   <div class="foot">数据本地读取，刷新页面即更新 · Plotly 交互图：拖拽缩放、滚轮缩放、上方按钮切换区间</div>
 </div>
@@ -173,7 +171,7 @@ PAGE = r"""
 const D = {{ data|safe }};
 
 /* ---------- summary cards ---------- */
-const cur = D.current, st = D.status, m = D.metrics;
+const cur = D.current, st = D.status;
 document.getElementById('asof').textContent = '数据截至 ' + cur.date;
 
 function fmtMoney(n){return '$'+n.toLocaleString('en-US');}
@@ -202,16 +200,6 @@ document.getElementById('readings').innerHTML = `
   <div class="row"><span class="k">TQQQ</span><span>$${st.current_price}</span></div>
   <div class="row"><span class="k">VIX</span><span class="${cur.vix_hit?'hot':''}">${cur.vix} ${cur.vix_hit?'· &gt;40 ✔':''}</span></div>
   <div class="row"><span class="k">标普 RSI(14)</span><span class="${cur.rsi_hit?'hot':''}">${cur.rsi} ${cur.rsi_hit?'· &lt;35 ✔':''}</span></div>`;
-
-const cards = [
-  ['期末净值', fmtMoney(m.final_equity), 'accent'],
-  ['年化 CAGR', m.cagr+'%', 'pos'],
-  ['最大回撤', m.max_dd+'%', 'neg'],
-  ['夏普', m.sharpe, ''],
-  ['交易数', m.n_trades+' · 胜率'+m.win_rate+'%', ''],
-];
-document.getElementById('metrics').innerHTML = cards.map(c=>
-  `<div class="card"><h3>${c[0]}</h3><div class="big ${c[2]}">${c[1]}</div></div>`).join('');
 
 /* ---------- charts ---------- */
 const dates = D.dates;
