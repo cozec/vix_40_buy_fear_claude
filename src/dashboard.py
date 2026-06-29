@@ -252,9 +252,10 @@ function markRow(x,idx,label,color,ay,doVix,doRsi){
 D.trades.forEach(t=>{
   /* only mark the panel(s) of the trigger that actually fired */
   const doVix=t.trigger.indexOf('VIX')>=0, doRsi=t.trigger.indexOf('RSI')>=0;
-  markRow(t.signal_date, dates.indexOf(t.signal_date), '信号', '#f0883e', -52, doVix, doRsi);
-  markRow(t.entry_date,  dates.indexOf(t.entry_date),  '买入', '#3fb950', -26, doVix, doRsi);
-  if(!t.open) markRow(t.exit_date, dates.indexOf(t.exit_date), '卖出', '#f85149', -34, doVix, doRsi);
+  markRow(t.signal_date, dates.indexOf(t.signal_date), '信号 '+t.signal_date, '#f0883e', -54, doVix, doRsi);
+  markRow(t.entry_date,  dates.indexOf(t.entry_date),  '买入 '+t.entry_date, '#3fb950', -26, doVix, doRsi);
+  if(!t.open) markRow(t.exit_date, dates.indexOf(t.exit_date),
+    '卖出 '+t.exit_date+'<br>买入 '+t.entry_date, '#f85149', -38, doVix, doRsi);
 });
 
 const lastDate = dates[dates.length-1];
