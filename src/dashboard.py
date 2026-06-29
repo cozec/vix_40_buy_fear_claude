@@ -71,6 +71,7 @@ def build_payload():
     trade_list = []
     for _, t in trades.iterrows():
         trade_list.append({
+            "signal_date": pd.Timestamp(t["Signal_Date"]).strftime("%Y-%m-%d"),
             "entry_date": pd.Timestamp(t["Entry_Date"]).strftime("%Y-%m-%d"),
             "entry_price": round(float(t["Entry_Price"]), 2),
             "exit_date": pd.Timestamp(t["Exit_Date"]).strftime("%Y-%m-%d"),
@@ -80,8 +81,13 @@ def build_payload():
             "open": bool(t.get("Open_At_End") is True),
         })
 
+    trading = set(df.index)
+    holidays = [d.strftime("%Y-%m-%d")
+                for d in pd.bdate_range(df.index[0], df.index[-1]) if d not in trading]
+
     return {
         "dates": [d.strftime("%Y-%m-%d") for d in df.index],
+        "holidays": holidays,
         "tqqq": _series(df["tqqq_close"]),
         "tqqq_open": _series(tqqq["Open"]),
         "tqqq_high": _series(tqqq["High"]),
@@ -144,13 +150,6 @@ PAGE = r"""
   .pos{color:var(--green)} .neg{color:var(--red)} .hot{color:var(--accent)} .accent{color:var(--accent)}
   .rules{font-size:13.5px;line-height:1.7;color:#cdd6e0}
   .rules b{color:var(--accent)}
-  .grail{background:linear-gradient(135deg,#2c2316 0%,#1a2029 60%);border:1px solid #4a3a22;
-    border-radius:14px;padding:15px 22px;margin-bottom:14px}
-  .grail .title{color:#f0b429;font-size:18px;font-weight:800;margin-bottom:9px}
-  .grail .ln{font-size:14.5px;margin:5px 0;color:#cdd6e0}
-  .grail .ln b{color:#f0883e}
-  .grail code{background:rgba(88,166,255,.13);color:#9ecbff;padding:2px 7px;border-radius:5px;
-    font-size:13px;font-family:"SFMono-Regular",Consolas,monospace}
   #chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}
   .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 </style>
@@ -172,12 +171,6 @@ PAGE = r"""
     </div>
     <div class="card" id="statusCard"><h3>当前状态</h3><div id="status"></div></div>
     <div class="card"><h3>当前读数</h3><div id="readings"></div></div>
-  </div>
-
-  <div class="grail">
-    <div class="title">🏆 "The Holy Grail"</div>
-    <div class="ln"><b>Entry:</b> Buy TQQQ if <code>(VIX &gt; 40)</code> OR <code>(S&amp;P 500 Weekly RSI &lt; 35)</code></div>
-    <div class="ln"><b>Exit:</b> Wait <code>1 Year</code>, then sell when <code>S&amp;P 500 &lt; MA100</code></div>
   </div>
 
   <div id="chart" style="height:1560px"></div>
@@ -243,20 +236,25 @@ const vix = {x:dates,y:D.vix,type:'scatter',mode:'lines',name:'VIX',
 const rsi = {x:dates,y:D.rsi,type:'scatter',mode:'lines',name:'标普 RSI(14)',
   line:{color:'#58a6ff',width:1},xaxis:'x',yaxis:'y3',hovertemplate:'%{x}<br>RSI %{y}<extra></extra>'};
 
-/* textbox markers for entry/exit on the trigger panels (VIX=y2, RSI=y3) */
+/* arrowed textboxes marking signal / entry / exit on the trigger panels (VIX=y2, RSI=y3) */
 const trigAnn=[];
-function tbox(x,y,yref,txt,color){
-  return {x:x,y:y,xref:'x',yref:yref,text:txt,showarrow:false,
-    font:{size:9,color:'#fff'},bgcolor:color,bordercolor:'#0f1419',borderwidth:1,
-    borderpad:2,opacity:0.95};
+function tbox(x,y,yref,txt,color,ay){
+  return {x:x,y:y,xref:'x',yref:yref,text:txt,
+    showarrow:true,arrowhead:3,arrowsize:1,arrowwidth:1.3,arrowcolor:color,ax:0,ay:ay,
+    font:{size:12,color:'#fff'},bgcolor:color,bordercolor:'#0f1419',borderwidth:1,
+    borderpad:4,opacity:0.96};
+}
+function markRow(x,idx,label,color,ay,doVix,doRsi){
+  if(idx<0) return;
+  if(doVix && D.vix[idx]!=null) trigAnn.push(tbox(x,D.vix[idx],'y2',label,color,ay));
+  if(doRsi && D.rsi[idx]!=null) trigAnn.push(tbox(x,D.rsi[idx],'y3',label,color,ay));
 }
 D.trades.forEach(t=>{
-  const ei=dates.indexOf(t.entry_date);
-  if(ei>=0){ if(D.vix[ei]!=null) trigAnn.push(tbox(t.entry_date,D.vix[ei],'y2','买','#3fb950'));
-             if(D.rsi[ei]!=null) trigAnn.push(tbox(t.entry_date,D.rsi[ei],'y3','买','#3fb950')); }
-  if(!t.open){ const xi=dates.indexOf(t.exit_date);
-    if(xi>=0){ if(D.vix[xi]!=null) trigAnn.push(tbox(t.exit_date,D.vix[xi],'y2','卖','#f85149'));
-               if(D.rsi[xi]!=null) trigAnn.push(tbox(t.exit_date,D.rsi[xi],'y3','卖','#f85149')); } }
+  /* only mark the panel(s) of the trigger that actually fired */
+  const doVix=t.trigger.indexOf('VIX')>=0, doRsi=t.trigger.indexOf('RSI')>=0;
+  markRow(t.signal_date, dates.indexOf(t.signal_date), '信号', '#f0883e', -52, doVix, doRsi);
+  markRow(t.entry_date,  dates.indexOf(t.entry_date),  '买入', '#3fb950', -26, doVix, doRsi);
+  if(!t.open) markRow(t.exit_date, dates.indexOf(t.exit_date), '卖出', '#f85149', -34, doVix, doRsi);
 });
 
 const lastDate = dates[dates.length-1];
@@ -270,6 +268,7 @@ const layout = {
   annotations:trigAnn,
   xaxis:{domain:[0,1],anchor:'y3',gridcolor:'#2d333b',range:[init,lastDate],
     rangeslider:{visible:false},
+    rangebreaks:[{bounds:['sat','mon']},{values:D.holidays}],
     rangeselector:{bgcolor:'#0f1419',activecolor:'#f0883e',bordercolor:'#2d333b',borderwidth:1,
       font:{color:'#e6edf3'},x:0,y:1.10,
       buttons:[
