@@ -238,32 +238,33 @@ const rsi = {x:dates,y:D.rsi,type:'scatter',mode:'lines',name:'标普 RSI(14)',
 
 /* arrowed textboxes marking signal / entry / exit on the trigger panels (VIX=y2, RSI=y3) */
 const trigAnn=[];
-function tbox(x,y,yref,txt,color,ay){
+function tbox(x,y,yref,txt,color,ax,ay){
   return {x:x,y:y,xref:'x',yref:yref,text:txt,
-    showarrow:true,arrowhead:3,arrowsize:1,arrowwidth:1.3,arrowcolor:color,ax:0,ay:ay,
-    font:{size:12,color:'#fff'},bgcolor:color,bordercolor:'#0f1419',borderwidth:1,
-    borderpad:4,opacity:0.96};
+    showarrow:true,arrowhead:3,arrowsize:1,arrowwidth:1.2,arrowcolor:color,ax:ax,ay:ay,
+    font:{size:11,color:'#fff'},bgcolor:color,bordercolor:'#0f1419',borderwidth:1,
+    borderpad:3,opacity:0.96};
 }
-function markRow(x,idx,label,color,ay,doVix,doRsi){
+function markRow(x,idx,label,color,ax,ay,doVix,doRsi){
   if(idx<0) return;
-  if(doVix && D.vix[idx]!=null) trigAnn.push(tbox(x,D.vix[idx],'y2',label,color,ay));
-  if(doRsi && D.rsi[idx]!=null) trigAnn.push(tbox(x,D.rsi[idx],'y3',label,color,ay));
+  if(doVix && D.vix[idx]!=null) trigAnn.push(tbox(x,D.vix[idx],'y2',label,color,ax,ay));
+  if(doRsi && D.rsi[idx]!=null) trigAnn.push(tbox(x,D.rsi[idx],'y3',label,color,ax,ay));
 }
 D.trades.forEach(t=>{
   const si=dates.indexOf(t.signal_date), ei=dates.indexOf(t.entry_date), xi=dates.indexOf(t.exit_date);
   const sigTxt='信号 '+t.signal_date, buyTxt='买入 '+t.entry_date,
         sellTxt='卖出 '+t.exit_date+'<br>买入 '+t.entry_date;
 
-  /* trigger panels: only mark the panel(s) of the trigger that actually fired */
+  /* trigger panels: only mark the panel(s) of the trigger that fired.
+     fan signal/buy/sell out (center / right / left) so clustered events don't overlap. */
   const doVix=t.trigger.indexOf('VIX')>=0, doRsi=t.trigger.indexOf('RSI')>=0;
-  markRow(t.signal_date, si, sigTxt, '#f0883e', -54, doVix, doRsi);
-  markRow(t.entry_date,  ei, buyTxt, '#3fb950', -26, doVix, doRsi);
-  if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -38, doVix, doRsi);
+  markRow(t.signal_date, si, sigTxt, '#f0883e',   0, -64, doVix, doRsi);
+  markRow(t.entry_date,  ei, buyTxt, '#3fb950',  62, -34, doVix, doRsi);
+  if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -64, -52, doVix, doRsi);
 
-  /* TQQQ price panel: same boxes, offset away from the candles with an arrow */
-  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e', -88));
-  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950', -46));
-  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -58));
+  /* TQQQ price panel: same boxes, fanned out and lifted away from the candles */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',  0, -96));
+  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  66, -52));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -66, -70));
 });
 
 const lastDate = dates[dates.length-1];
