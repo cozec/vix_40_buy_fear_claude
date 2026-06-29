@@ -25,9 +25,9 @@ panic and holds through the recovery.
 
 ```
 data/      input CSVs (yfinance) — not regenerated
-src/       backtest.py
+src/       backtest.py · download_data.py · plot_trades.py · dashboard.py
 results/   trades + performance summary CSVs
-plots/     equity_curve.png
+plots/     equity_curve.png · trade_NN.png
 logs/      run output
 ```
 
@@ -36,8 +36,24 @@ logs/      run output
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install pandas numpy matplotlib
-python src/backtest.py
+pip install pandas numpy matplotlib yfinance flask
+
+python src/download_data.py   # refresh TQQQ/VIX/S&P from Yahoo Finance
+python src/backtest.py        # run backtest -> results/ + summary
+python src/plot_trades.py     # per-trade candlestick charts -> plots/
 ```
 
 See [summary.md](summary.md) for results.
+
+## Live dashboard
+
+A local, interactive monitoring page (price + VIX + RSI triggers, current
+position status, zoomable charts with 3M/6M/1Y/3Y/Max buttons):
+
+```bash
+python src/dashboard.py        # then open http://localhost:8000
+# PORT=8050 python src/dashboard.py   # macOS reserves 5000 for AirPlay
+```
+
+Data is read fresh on each page load, so re-running `download_data.py` then
+refreshing the browser updates the view.
