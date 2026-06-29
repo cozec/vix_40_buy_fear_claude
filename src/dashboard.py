@@ -260,11 +260,10 @@ D.trades.forEach(t=>{
   markRow(t.entry_date,  ei, buyTxt, '#3fb950',  62, -34, doVix, doRsi);
   if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -64, -52, doVix, doRsi);
 
-  /* TQQQ price panel: identical boxes to the RSI panel. NOTE: price y-axis is
-     log scale, so annotation y must be log10(value), else it lands off-screen. */
-  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, Math.log10(D.tqqq[si]), 'y', sigTxt, '#f0883e',   0, -64));
-  trigAnn.push(tbox(t.entry_date, Math.log10(t.entry_price), 'y', buyTxt, '#3fb950',  62, -34));
-  if(!t.open) trigAnn.push(tbox(t.exit_date, Math.log10(t.exit_price), 'y', sellTxt, '#f85149', -64, -52));
+  /* TQQQ price panel: identical boxes to the RSI panel (linear y-axis). */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',   0, -64));
+  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  62, -34));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -64, -52));
 });
 
 const lastDate = dates[dates.length-1];
@@ -287,7 +286,7 @@ const layout = {
         {count:1,label:'1Y',step:'year',stepmode:'backward'},
         {count:3,label:'3Y',step:'year',stepmode:'backward'},
         {step:'all',label:'Max'}]}},
-  yaxis:{domain:[0.42,1],title:'TQQQ 价格 ($)',type:'log',gridcolor:'#2d333b'},
+  yaxis:{domain:[0.42,1],title:'TQQQ 价格 ($)',gridcolor:'#2d333b'},
   yaxis2:{domain:[0.22,0.39],title:'VIX',gridcolor:'#2d333b'},
   yaxis3:{domain:[0.02,0.19],title:'RSI(14)',gridcolor:'#2d333b'},
   shapes:[
@@ -313,7 +312,7 @@ function autoscaleY(full){
     const r=D.rsi[i]; if(r!=null){if(r<rl)rl=r;if(r>rh)rh=r;}
   }
   if(!isFinite(pl)||!isFinite(ph)) return;
-  const upd={'yaxis.range':[Math.log10(pl*0.95),Math.log10(ph*1.05)]};
+  const upd={'yaxis.range':[pl*0.95,ph*1.05]};
   if(isFinite(vl)){ const lo=Math.min(vl,D.thresholds.vix),hi=Math.max(vh,D.thresholds.vix),
     p=Math.max(1,(hi-lo)*0.1); upd['yaxis2.range']=[Math.max(0,lo-p),hi+p]; }
   if(isFinite(rl)){ const lo=Math.min(rl,D.thresholds.rsi),hi=Math.max(rh,D.thresholds.rsi),
