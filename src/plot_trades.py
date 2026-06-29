@@ -79,6 +79,10 @@ def main():
         exit_d = pd.Timestamp(t["Exit_Date"])
         is_open = t.get("Open_At_End") is True
 
+        # max drawdown of TQQQ (close) experienced while holding the trade
+        hold_close = tqqq["Close"].loc[ent:exit_d]
+        max_dd = float((hold_close / hold_close.cummax() - 1).min() * 100) if len(hold_close) else 0.0
+
         if is_open:
             # show the trailing 1 year of data, latest date flush to the right border
             end = last_date
@@ -141,7 +145,7 @@ def main():
         panic = PANIC.get(num)
         head = f"交易 #{num}" + (f"  ·  {panic}" if panic else "")
         ax1.set_title(
-            f"{head}  ·  收益 {t['Return_%']:+.1f}%{status}\n"
+            f"{head}  ·  收益 {t['Return_%']:+.1f}%  ·  最大回撤 {max_dd:.1f}%{status}\n"
             f"触发 {t['Trigger']}   信号 {sig:%Y-%m-%d}   买入 {ent:%Y-%m-%d}   "
             f"卖出 {exit_lbl}   持有 {int(t['Hold_Days'])} 天",
             color=INK, fontsize=12, pad=12)
