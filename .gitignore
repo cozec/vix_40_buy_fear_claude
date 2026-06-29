@@ -11,6 +11,7 @@ __pycache__/
 /results/
 /logs/
 
-# Plots: keep only the asset referenced by report.html
+# Plots: keep only the assets referenced by report.html
 /plots/*
 !/plots/equity_curve.png
+!/plots/trade_*.png
