@@ -250,12 +250,20 @@ function markRow(x,idx,label,color,ay,doVix,doRsi){
   if(doRsi && D.rsi[idx]!=null) trigAnn.push(tbox(x,D.rsi[idx],'y3',label,color,ay));
 }
 D.trades.forEach(t=>{
-  /* only mark the panel(s) of the trigger that actually fired */
+  const si=dates.indexOf(t.signal_date), ei=dates.indexOf(t.entry_date), xi=dates.indexOf(t.exit_date);
+  const sigTxt='信号 '+t.signal_date, buyTxt='买入 '+t.entry_date,
+        sellTxt='卖出 '+t.exit_date+'<br>买入 '+t.entry_date;
+
+  /* trigger panels: only mark the panel(s) of the trigger that actually fired */
   const doVix=t.trigger.indexOf('VIX')>=0, doRsi=t.trigger.indexOf('RSI')>=0;
-  markRow(t.signal_date, dates.indexOf(t.signal_date), '信号 '+t.signal_date, '#f0883e', -54, doVix, doRsi);
-  markRow(t.entry_date,  dates.indexOf(t.entry_date),  '买入 '+t.entry_date, '#3fb950', -26, doVix, doRsi);
-  if(!t.open) markRow(t.exit_date, dates.indexOf(t.exit_date),
-    '卖出 '+t.exit_date+'<br>买入 '+t.entry_date, '#f85149', -38, doVix, doRsi);
+  markRow(t.signal_date, si, sigTxt, '#f0883e', -54, doVix, doRsi);
+  markRow(t.entry_date,  ei, buyTxt, '#3fb950', -26, doVix, doRsi);
+  if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -38, doVix, doRsi);
+
+  /* TQQQ price panel: same boxes, offset away from the candles with an arrow */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e', -88));
+  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950', -46));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -58));
 });
 
 const lastDate = dates[dates.length-1];
