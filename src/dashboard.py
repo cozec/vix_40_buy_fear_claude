@@ -260,10 +260,11 @@ D.trades.forEach(t=>{
   markRow(t.entry_date,  ei, buyTxt, '#3fb950',  62, -34, doVix, doRsi);
   if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -64, -52, doVix, doRsi);
 
-  /* TQQQ price panel: identical boxes to the RSI panel (same content + fan-out) */
-  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',   0, -64));
-  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  62, -34));
-  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -64, -52));
+  /* TQQQ price panel: identical boxes to the RSI panel. NOTE: price y-axis is
+     log scale, so annotation y must be log10(value), else it lands off-screen. */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, Math.log10(D.tqqq[si]), 'y', sigTxt, '#f0883e',   0, -64));
+  trigAnn.push(tbox(t.entry_date, Math.log10(t.entry_price), 'y', buyTxt, '#3fb950',  62, -34));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, Math.log10(t.exit_price), 'y', sellTxt, '#f85149', -64, -52));
 });
 
 const lastDate = dates[dates.length-1];
