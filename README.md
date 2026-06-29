@@ -17,7 +17,7 @@ panic and holds through the recovery.
 - Signals evaluated on the daily close; entry fills at the close **9 trading days** later, exit at the trigger-day close (no look-ahead).
 - Weekly RSI(14) uses a **simple moving average** of gains/losses (not Wilder's exponential smoothing).
 - Start capital **$10,000**.
-- Tradable window bounded by TQQQ & VIX data availability: **2010-02-11 → 2025-12-18**.
+- Tradable window bounded by TQQQ & VIX data availability: **2010-02-11 → 2026-06-26**.
 - Signals firing while already invested are ignored.
 - Benchmark: buy & hold TQQQ over the same window.
 

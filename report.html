@@ -76,8 +76,8 @@
 <body>
 <header>
   <h1>VIX &gt; 40「恐慌抄底」策略回测报告</h1>
-  <div class="sub">在极端市场恐慌中买入杠杆 ETF（TQQQ），持有至复苏 · 回测区间 2010-02-11 → 2025-12-18</div>
-  <div class="badge">起始资金 $10,000 · 9 笔交易 · 胜率 100%</div>
+  <div class="sub">在极端市场恐慌中买入杠杆 ETF（TQQQ），持有至复苏 · 回测区间 2010-02-11 → 2026-06-26</div>
+  <div class="badge">起始资金 $10,000 · 10 笔交易 · 胜率 100%</div>
 </header>
 
 <div class="wrap">
@@ -105,11 +105,11 @@
 
   <h2>二、核心业绩</h2>
   <div class="grid">
-    <div class="kpi"><div class="v">$3.38M</div><div class="l">期末净值</div></div>
-    <div class="kpi"><div class="v">44.4%</div><div class="l">年化收益 (CAGR)</div></div>
+    <div class="kpi"><div class="v">$3.62M</div><div class="l">期末净值</div></div>
+    <div class="kpi"><div class="v">43.3%</div><div class="l">年化收益 (CAGR)</div></div>
     <div class="kpi"><div class="v">-61.6%</div><div class="l">最大回撤</div></div>
-    <div class="kpi"><div class="v">0.98</div><div class="l">夏普比率</div></div>
-    <div class="kpi"><div class="v">9 / 9</div><div class="l">胜率 100%</div></div>
+    <div class="kpi"><div class="v">0.97</div><div class="l">夏普比率</div></div>
+    <div class="kpi"><div class="v">10 / 10</div><div class="l">胜率 100%</div></div>
   </div>
 
   <h3>策略 vs. 基准（买入并持有 TQQQ）</h3>
@@ -120,14 +120,14 @@
     </thead>
     <tbody>
       <tr class="hl">
-        <td>VIX40 策略 (TQQQ)</td><td>$3,383,336</td><td class="pos">33,733.4</td><td>44.41</td><td>-61.57</td><td>0.98</td><td>0.13</td><td>0.68</td>
+        <td>VIX40 策略 (TQQQ)</td><td>$3,623,260</td><td class="pos">36,132.6</td><td>43.33</td><td>-61.57</td><td>0.97</td><td>0.11</td><td>0.69</td>
       </tr>
       <tr>
-        <td>买入并持有 TQQQ</td><td>$2,491,786</td><td class="pos">24,817.9</td><td>41.65</td><td>-81.66</td><td>0.88</td><td>0.00</td><td>1.00</td>
+        <td>买入并持有 TQQQ</td><td>$3,485,958</td><td class="pos">34,759.6</td><td>42.99</td><td>-81.66</td><td>0.90</td><td>-0.00</td><td>1.00</td>
       </tr>
     </tbody>
   </table>
-  <p>策略在<strong>每一个维度上均跑赢</strong>裸持 TQQQ：期末净值更高（$3.38M vs $2.49M）、年化更高（44.4% vs 41.7%）、最大回撤显著更小（<strong>-62% vs -82%</strong>）、夏普更高（0.98 vs 0.88），且 Beta 仅 0.68、Alpha 为正。换言之，它用更小的风险敞口换来了更高的回报。</p>
+  <p>策略在<strong>每一个维度上均跑赢</strong>裸持 TQQQ：期末净值更高（$3.62M vs $3.49M）、年化更高（43.3% vs 43.0%）、最大回撤显著更小（<strong>-62% vs -82%</strong>）、夏普更高（0.97 vs 0.90），且 Beta 仅 0.69、Alpha 为正。2026 年 TQQQ 大幅反弹使净值差距收窄，但<strong>风险调整后的优势依然稳固</strong>——用更小的风险敞口换来更高的回报。</p>
 
   <h2>三、净值曲线</h2>
   <div class="card">
@@ -135,7 +135,7 @@
     <p class="note">纵轴为对数坐标（起始 $10,000）。策略大部分时间持有现金，仅在恐慌后入场——因此曲线呈阶梯状上涨，并在 2018、2020、2022 等大跌中避开了裸持 TQQQ 的深度回撤。</p>
   </div>
 
-  <h2>四、完整交易记录（全部 9 笔）</h2>
+  <h2>四、完整交易记录（全部 10 笔）</h2>
   <p class="note">信号日 = 条件触发当日（收盘）；入场日 = 其后第 9 个交易日的收盘，实际买入点；触发原因列出当日的条件与数值。</p>
   <table>
     <thead>
@@ -144,29 +144,31 @@
     <tbody>
       <tr><td>1</td><td>2010-05-07</td><td>2010-05-20</td><td>VIX 41.0 &gt; 40</td><td>0.21</td><td>2011-06-01</td><td>0.41</td><td class="pos">+94.3</td><td>377</td><td>$19,427</td></tr>
       <tr><td>2</td><td>2011-08-05</td><td>2011-08-18</td><td>RSI 28.0 &lt; 35</td><td>0.28</td><td>2012-11-07</td><td>0.49</td><td class="pos">+77.2</td><td>447</td><td>$34,429</td></tr>
-      <tr><td>3</td><td>2015-08-21</td><td>2015-09-03</td><td>RSI 29.4 &lt; 35</td><td>1.83</td><td>2016-10-11</td><td>2.49</td><td class="pos">+35.9</td><td>404</td><td>$46,804</td></tr>
-      <tr><td>4</td><td>2016-11-04</td><td>2016-11-17</td><td>RSI 30.7 &lt; 35</td><td>2.48</td><td>2018-02-08</td><td>5.18</td><td class="pos">+108.8</td><td>448</td><td>$97,727</td></tr>
-      <tr><td>5</td><td>2018-10-26</td><td>2018-11-08</td><td>RSI 34.9 &lt; 35</td><td>6.75</td><td>2020-02-25</td><td>10.53</td><td class="pos">+56.0</td><td>474</td><td>$152,450</td></tr>
-      <tr><td>6</td><td>2020-02-28</td><td>2020-03-12</td><td>VIX 40.1 &gt; 40</td><td>5.36</td><td>2021-09-30</td><td>29.84</td><td class="pos">+456.6</td><td>567</td><td>$848,555</td></tr>
-      <tr><td>7</td><td>2022-05-13</td><td>2022-05-26</td><td>RSI 30.6 &lt; 35</td><td>14.53</td><td>2023-09-21</td><td>17.36</td><td class="pos">+19.5</td><td>483</td><td>$1,014,080</td></tr>
-      <tr><td>8</td><td>2023-10-20</td><td>2023-11-02</td><td>RSI 32.6 &lt; 35</td><td>17.70</td><td>2025-02-27</td><td>35.58</td><td class="pos">+101.0</td><td>483</td><td>$2,038,369</td></tr>
-      <tr><td>9</td><td>2025-03-14</td><td>2025-03-27</td><td>RSI 32.0 &lt; 35</td><td>31.03</td><td><em>持仓中</em> 2025-12-18</td><td>51.51</td><td class="pos">+66.0</td><td>266</td><td>$3,383,336</td></tr>
+      <tr><td>3</td><td>2015-08-21</td><td>2015-09-03</td><td>RSI 29.4 &lt; 35</td><td>1.82</td><td>2016-10-11</td><td>2.48</td><td class="pos">+35.9</td><td>404</td><td>$46,804</td></tr>
+      <tr><td>4</td><td>2016-11-04</td><td>2016-11-17</td><td>RSI 30.7 &lt; 35</td><td>2.47</td><td>2018-02-08</td><td>5.16</td><td class="pos">+108.8</td><td>448</td><td>$97,727</td></tr>
+      <tr><td>5</td><td>2018-10-26</td><td>2018-11-08</td><td>RSI 34.9 &lt; 35</td><td>6.73</td><td>2020-02-25</td><td>10.50</td><td class="pos">+56.0</td><td>474</td><td>$152,450</td></tr>
+      <tr><td>6</td><td>2020-02-28</td><td>2020-03-12</td><td>VIX 40.1 &gt; 40</td><td>5.34</td><td>2021-09-30</td><td>29.75</td><td class="pos">+456.6</td><td>567</td><td>$848,556</td></tr>
+      <tr><td>7</td><td>2022-05-13</td><td>2022-05-26</td><td>RSI 30.6 &lt; 35</td><td>14.48</td><td>2023-09-21</td><td>17.30</td><td class="pos">+19.5</td><td>483</td><td>$1,014,081</td></tr>
+      <tr><td>8</td><td>2023-10-20</td><td>2023-11-02</td><td>RSI 32.6 &lt; 35</td><td>17.64</td><td>2025-02-27</td><td>35.47</td><td class="pos">+101.0</td><td>483</td><td>$2,038,371</td></tr>
+      <tr><td>9</td><td>2025-03-14</td><td>2025-03-27</td><td>RSI 32.0 &lt; 35</td><td>30.93</td><td>2026-03-27</td><td>38.78</td><td class="pos">+25.4</td><td>365</td><td>$2,555,399</td></tr>
+      <tr><td>10</td><td>2026-03-30</td><td>2026-04-13</td><td>RSI 28.2 &lt; 35</td><td>50.66</td><td><em>持仓中</em> 2026-06-26</td><td>71.83</td><td class="pos">+41.8</td><td>74</td><td>$3,623,260</td></tr>
     </tbody>
   </table>
-  <p class="note">* 第 9 笔在回测结束时仍在持仓——持有 266 天（&lt; 365 天最低持有期），出场条件尚未满足，按最后收盘价做市值估算。</p>
+  <p class="note">* 第 10 笔在回测结束时仍在持仓——持有 74 天（&lt; 365 天最低持有期），出场条件尚未满足，按最后收盘价做市值估算。</p>
 
   <h3>信号时点解读</h3>
   <ul>
-    <li>入场点精准命中历次经典恐慌：2010 闪崩、2011 美债降级、2015 中国汇改、2018 美联储加息抛售、2020 新冠、2022 加息熊市、2023 秋季回调、2025 关税冲击。</li>
+    <li>入场点精准命中历次经典恐慌：2010 闪崩、2011 美债降级、2015 中国汇改、2018 美联储加息抛售、2020 新冠、2022 加息熊市、2023 秋季回调、2025/2026 关税与回调。</li>
     <li>本版 RSI 采用<strong>简单移动平均（SMA）</strong>而非 Wilder 平滑，灵敏度更高，因此多捕捉到 2016-11、2018-10、2023-10 等几次超卖——其中 2023-10 这笔（RSI 32.6）正是 Wilder 平滑下（38.9）会被漏掉的信号。</li>
+    <li>数据更新后：第 9 笔（2025-03 入场）满 1 年后于 <strong>2026-03-27</strong> 标普跌破 MA100 而平仓（+25.4%）；随即第 10 笔在 <strong>2026 年 3 月底的回调</strong>（SMA RSI 28.2）入场，目前浮盈 +41.8%。</li>
     <li>「至少持有 1 年 + 标普跌破 MA100」的出场规则，让每笔仓位都吃完整轮复苏，而非过早离场——这正是杠杆 ETF 上单笔大幅盈利的主要来源。</li>
   </ul>
 
   <h2>五、方法与假设</h2>
   <div class="card">
     <ul>
-      <li><strong>标的与数据：</strong>交易标的为 TQQQ；信号所需的 VIX、标普 500 数据均取自 <code>./data</code> 目录下的本地 CSV（yfinance 下载），不引入任何新数据。</li>
-      <li><strong>回测区间：</strong>受 TQQQ 与 VIX 数据起始日限制，为 <strong>2010-02-11 → 2025-12-18</strong>。</li>
+      <li><strong>标的与数据：</strong>交易标的为 TQQQ；信号所需的 VIX、标普 500 数据来自 Yahoo Finance（yfinance，经拆股/分红调整），更新至 2026-06-26。</li>
+      <li><strong>回测区间：</strong>受 TQQQ 与 VIX 数据起始日限制，为 <strong>2010-02-11 → 2026-06-26</strong>。</li>
       <li><strong>无未来函数：</strong>信号基于当日收盘计算；入场于其后第 9 个交易日收盘成交，出场于触发日收盘成交，严格避免前视偏差。</li>
       <li><strong>RSI 计算：</strong>标普 500 周线 RSI(14)，对涨跌幅采用 <code>rolling(window=14).mean()</code> 的<strong>简单移动平均</strong>（非 Wilder 指数平滑）。</li>
       <li><strong>买入持有基准：</strong>采用简单公式 <code>$10,000 × (期末收盘 / 期初收盘)</code> 计算 TQQQ 裸持净值。</li>
@@ -176,11 +178,11 @@
   </div>
 
   <div class="disclaimer">
-    <strong>⚠️ 风险提示：</strong>本报告仅为历史数据回测与教育研究用途，<strong>不构成任何投资建议</strong>。TQQQ 为 3 倍杠杆 ETF，波动与回撤极大（裸持最大回撤超 -80%），存在波动率损耗与本金大幅亏损风险。历史业绩不代表未来表现；样本仅 9 笔交易，统计意义有限，且未计入交易成本、滑点与税费。请勿据此实盘操作。
+    <strong>⚠️ 风险提示：</strong>本报告仅为历史数据回测与教育研究用途，<strong>不构成任何投资建议</strong>。TQQQ 为 3 倍杠杆 ETF，波动与回撤极大（裸持最大回撤超 -80%），存在波动率损耗与本金大幅亏损风险。历史业绩不代表未来表现；样本仅 10 笔交易，统计意义有限，且未计入交易成本、滑点与税费。请勿据此实盘操作。
   </div>
 
   <footer>
-    VIX &gt; 40「恐慌抄底」策略回测 · 生成于 2026-06-28 · 数据区间 2010-02-11 → 2025-12-18
+    VIX &gt; 40「恐慌抄底」策略回测 · 生成于 2026-06-28 · 数据区间 2010-02-11 → 2026-06-26
   </footer>
 
 </div>

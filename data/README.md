@@ -10,4 +10,3 @@ A systematic approach to capitalize on extreme market panic using VIX signals an
 *   **Entry**: Wait 9 trading days after the signal, then buy at market close**.
 *   **Exit**: Wait 1 Year, then exit when **S&P 500 < MA100**.
 
-Note: Don't download any new data. Use the data under ./data only
