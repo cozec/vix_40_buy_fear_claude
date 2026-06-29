@@ -79,8 +79,13 @@ def main():
         exit_d = pd.Timestamp(t["Exit_Date"])
         is_open = t.get("Open_At_End") is True
 
-        start = sig - PAD
-        end = (ent + pd.Timedelta(days=365)) if is_open else (exit_d + PAD)
+        if is_open:
+            # show the trailing 1 year of data, latest date flush to the right border
+            end = last_date
+            start = last_date - pd.Timedelta(days=365)
+        else:
+            start = sig - PAD
+            end = exit_d + PAD
         data_end = min(end, last_date)
         tq = tqqq.loc[start:data_end]
         dd = df.loc[start:data_end]
@@ -106,9 +111,11 @@ def main():
         ax1.axvline(ent, color=UP, ls="--", lw=1.3)
         ax1.scatter([ent], [t["Entry_Price"]], marker="^", s=120,
                     color=UP, edgecolor="white", lw=0.6, zorder=5)
-        ax1.annotate(f"买入 ${t['Entry_Price']:.2f}", (ent, t["Entry_Price"]),
-                     color=UP, fontsize=9, ha="center", va="top",
-                     xytext=(0, -14), textcoords="offset points")
+        ax1.annotate(f"买入 ${t['Entry_Price']:.2f}", xy=(ent, t["Entry_Price"]),
+                     xytext=(-58, -44), textcoords="offset points",
+                     color=UP, fontsize=9, ha="center", va="center", zorder=6,
+                     arrowprops=dict(arrowstyle="->", color=UP, lw=1.1),
+                     bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=UP, lw=0.9))
         ax1.annotate("信号", (sig, tq["High"].max()), color=ORANGE, fontsize=9,
                      ha="center", va="bottom")
 
@@ -116,9 +123,11 @@ def main():
             ax1.axvline(exit_d, color=DOWN, ls="--", lw=1.3)
             ax1.scatter([exit_d], [t["Exit_Price"]], marker="v", s=120,
                         color=DOWN, edgecolor="white", lw=0.6, zorder=5)
-            ax1.annotate(f"卖出 ${t['Exit_Price']:.2f}", (exit_d, t["Exit_Price"]),
-                         color=DOWN, fontsize=9, ha="center", va="bottom",
-                         xytext=(0, 12), textcoords="offset points")
+            ax1.annotate(f"卖出 ${t['Exit_Price']:.2f}", xy=(exit_d, t["Exit_Price"]),
+                         xytext=(-58, 40), textcoords="offset points",
+                         color=DOWN, fontsize=9, ha="center", va="center", zorder=6,
+                         arrowprops=dict(arrowstyle="->", color=DOWN, lw=1.1),
+                         bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=DOWN, lw=0.9))
             exit_lbl = exit_d.strftime("%Y-%m-%d")
         else:
             hold_end = ent + pd.Timedelta(days=365)
