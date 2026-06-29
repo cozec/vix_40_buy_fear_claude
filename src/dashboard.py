@@ -260,10 +260,12 @@ D.trades.forEach(t=>{
   markRow(t.entry_date,  ei, buyTxt, '#3fb950',  62, -34, doVix, doRsi);
   if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -64, -52, doVix, doRsi);
 
-  /* TQQQ price panel: identical boxes to the RSI panel (linear y-axis). */
-  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',   0, -64));
-  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  62, -34));
-  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -64, -52));
+  /* TQQQ price panel (linear, tall): spread boxes far apart so clustered
+     events (trade-9 sell next to trade-10 signal) don't overlap.
+     signal -> high up; buy -> up-right; sell -> far up-left. */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',    0, -104));
+  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',   78, -44));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -128, -46));
 });
 
 const lastDate = dates[dates.length-1];
