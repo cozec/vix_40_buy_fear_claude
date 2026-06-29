@@ -79,9 +79,9 @@ def main():
         exit_d = pd.Timestamp(t["Exit_Date"])
         is_open = t.get("Open_At_End") is True
 
-        # max drawdown of TQQQ (close) experienced while holding the trade
+        # max drawdown measured from the buy price (worst dip below entry while holding)
         hold_close = tqqq["Close"].loc[ent:exit_d]
-        max_dd = float((hold_close / hold_close.cummax() - 1).min() * 100) if len(hold_close) else 0.0
+        max_dd = float((hold_close / t["Entry_Price"] - 1).min() * 100) if len(hold_close) else 0.0
 
         if is_open:
             # show the trailing 1 year of data, latest date flush to the right border
