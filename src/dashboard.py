@@ -193,11 +193,9 @@ if (st.in_position){
     ? (st.below_ma100 ? '<span class="neg">已满足（标普&lt;MA100）→ 待卖出</span>' : '<span class="pos">已解锁，等待标普跌破 MA100</span>')
     : ('锁定中，还需 '+st.min_hold_left+' 天');
   statusHTML = `
-    <div class="row"><span class="k">买入日 / 价</span><span>${st.entry_date} · $${st.entry_price}</span></div>
-    <div class="row"><span class="k">现价</span><span>$${st.current_price}</span></div>
-    <div class="row"><span class="k">浮动收益</span><span class="${st.unrealized_pct>=0?'pos':'neg'}">${st.unrealized_pct>=0?'+':''}${st.unrealized_pct}%</span></div>
-    <div class="row"><span class="k">已持有</span><span>${st.hold_days} 天</span></div>
-    <div class="row"><span class="k">出场条件</span><span>${armed}</span></div>`;
+    <div class="row"><span class="k">买入</span><span>${st.entry_date} · $${st.entry_price}</span></div>
+    <div class="row"><span class="k">现价 / 浮动</span><span>$${st.current_price} · <span class="${st.unrealized_pct>=0?'pos':'neg'}">${st.unrealized_pct>=0?'+':''}${st.unrealized_pct}%</span></span></div>
+    <div class="row"><span class="k">持有 / 出场</span><span>${st.hold_days} 天 · ${armed}</span></div>`;
 } else {
   pillHTML = '<span class="pill flat">空仓</span>';
   statusHTML = `
