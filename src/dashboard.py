@@ -144,6 +144,13 @@ PAGE = r"""
   .pos{color:var(--green)} .neg{color:var(--red)} .hot{color:var(--accent)} .accent{color:var(--accent)}
   .rules{font-size:13.5px;line-height:1.7;color:#cdd6e0}
   .rules b{color:var(--accent)}
+  .grail{background:linear-gradient(135deg,#2c2316 0%,#1a2029 60%);border:1px solid #4a3a22;
+    border-radius:14px;padding:15px 22px;margin-bottom:14px}
+  .grail .title{color:#f0b429;font-size:18px;font-weight:800;margin-bottom:9px}
+  .grail .ln{font-size:14.5px;margin:5px 0;color:#cdd6e0}
+  .grail .ln b{color:#f0883e}
+  .grail code{background:rgba(88,166,255,.13);color:#9ecbff;padding:2px 7px;border-radius:5px;
+    font-size:13px;font-family:"SFMono-Regular",Consolas,monospace}
   #chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}
   .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 </style>
@@ -167,7 +174,13 @@ PAGE = r"""
     <div class="card"><h3>当前读数</h3><div id="readings"></div></div>
   </div>
 
-  <div id="chart" style="height:1040px"></div>
+  <div class="grail">
+    <div class="title">🏆 "The Holy Grail"</div>
+    <div class="ln"><b>Entry:</b> Buy TQQQ if <code>(VIX &gt; 40)</code> OR <code>(S&amp;P 500 Weekly RSI &lt; 35)</code></div>
+    <div class="ln"><b>Exit:</b> Wait <code>1 Year</code>, then sell when <code>S&amp;P 500 &lt; MA100</code></div>
+  </div>
+
+  <div id="chart" style="height:1560px"></div>
   <div class="foot">数据本地读取，刷新页面即更新 · Plotly 交互图：拖拽缩放、滚轮缩放、上方按钮切换区间</div>
 </div>
 
