@@ -137,18 +137,18 @@ PAGE = r"""
   .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
   h1{font-size:22px;margin:0 0 4px}
   .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
-  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-  .card h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:11px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 15px}
+  .card h3{margin:0 0 5px;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase}
   .big{font-size:26px;font-weight:800}
-  .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--line);font-size:12.5px}
   .row:last-child{border-bottom:none}
   .row .k{color:var(--muted)}
   .pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:700}
   .pill.in{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.4)}
   .pill.flat{background:rgba(154,167,180,.12);color:var(--muted);border:1px solid var(--line)}
   .pos{color:var(--green)} .neg{color:var(--red)} .hot{color:var(--accent)} .accent{color:var(--accent)}
-  .rules{font-size:13.5px;line-height:1.7;color:#cdd6e0}
+  .rules{font-size:12.5px;line-height:1.42;color:#cdd6e0}
   .rules b{color:var(--accent)}
   #chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}
   .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
@@ -192,7 +192,7 @@ if (st.in_position){
     ? (st.below_ma100 ? '<span class="neg">已满足（标普&lt;MA100）→ 待卖出</span>' : '<span class="pos">已解锁，等待标普跌破 MA100</span>')
     : ('锁定中，还需 '+st.min_hold_left+' 天');
   statusHTML = `
-    <div style="margin-bottom:10px"><span class="pill in">持仓中</span></div>
+    <div style="margin-bottom:6px"><span class="pill in">持仓中</span></div>
     <div class="row"><span class="k">买入日 / 价</span><span>${st.entry_date} · $${st.entry_price}</span></div>
     <div class="row"><span class="k">现价</span><span>$${st.current_price}</span></div>
     <div class="row"><span class="k">浮动收益</span><span class="${st.unrealized_pct>=0?'pos':'neg'}">${st.unrealized_pct>=0?'+':''}${st.unrealized_pct}%</span></div>
@@ -200,7 +200,7 @@ if (st.in_position){
     <div class="row"><span class="k">出场条件</span><span>${armed}</span></div>`;
 } else {
   statusHTML = `
-    <div style="margin-bottom:10px"><span class="pill flat">空仓</span></div>
+    <div style="margin-bottom:6px"><span class="pill flat">空仓</span></div>
     <div class="row"><span class="k">现价</span><span>$${st.current_price}</span></div>
     <div class="row"><span class="k">当前是否触发</span><span>${st.signal_now?'<span class="hot">是 · 准备入场</span>':'否，等待恐慌信号'}</span></div>`;
 }
