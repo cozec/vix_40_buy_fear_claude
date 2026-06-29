@@ -160,7 +160,7 @@ PAGE = r"""
   <div class="sub" id="asof"></div>
 
   <div class="grid">
-    <div class="card" style="grid-column:span 2">
+    <div class="card">
       <h3>策略规则</h3>
       <div class="rules">
         <div>📈 <b>信号</b>：VIX 收盘 &gt; 40 <b>或</b> 标普周线 RSI(14) &lt; 35</div>
@@ -169,7 +169,7 @@ PAGE = r"""
         <div>💰 <b>仓位</b>：满仓复利，同一时间仅一笔</div>
       </div>
     </div>
-    <div class="card" id="statusCard"><h3>当前状态</h3><div id="status"></div></div>
+    <div class="card" id="statusCard"><h3>当前状态 <span id="statusPill"></span></h3><div id="status"></div></div>
     <div class="card"><h3>当前读数</h3><div id="readings"></div></div>
   </div>
 
@@ -186,25 +186,26 @@ document.getElementById('asof').textContent = '数据截至 ' + cur.date;
 
 function fmtMoney(n){return '$'+n.toLocaleString('en-US');}
 
-let statusHTML = '';
+let statusHTML = '', pillHTML = '';
 if (st.in_position){
+  pillHTML = '<span class="pill in">持仓中</span>';
   const armed = st.exit_armed
     ? (st.below_ma100 ? '<span class="neg">已满足（标普&lt;MA100）→ 待卖出</span>' : '<span class="pos">已解锁，等待标普跌破 MA100</span>')
     : ('锁定中，还需 '+st.min_hold_left+' 天');
   statusHTML = `
-    <div style="margin-bottom:6px"><span class="pill in">持仓中</span></div>
     <div class="row"><span class="k">买入日 / 价</span><span>${st.entry_date} · $${st.entry_price}</span></div>
     <div class="row"><span class="k">现价</span><span>$${st.current_price}</span></div>
     <div class="row"><span class="k">浮动收益</span><span class="${st.unrealized_pct>=0?'pos':'neg'}">${st.unrealized_pct>=0?'+':''}${st.unrealized_pct}%</span></div>
     <div class="row"><span class="k">已持有</span><span>${st.hold_days} 天</span></div>
     <div class="row"><span class="k">出场条件</span><span>${armed}</span></div>`;
 } else {
+  pillHTML = '<span class="pill flat">空仓</span>';
   statusHTML = `
-    <div style="margin-bottom:6px"><span class="pill flat">空仓</span></div>
     <div class="row"><span class="k">现价</span><span>$${st.current_price}</span></div>
     <div class="row"><span class="k">当前是否触发</span><span>${st.signal_now?'<span class="hot">是 · 准备入场</span>':'否，等待恐慌信号'}</span></div>`;
 }
 document.getElementById('status').innerHTML = statusHTML;
+document.getElementById('statusPill').innerHTML = pillHTML;
 
 document.getElementById('readings').innerHTML = `
   <div class="row"><span class="k">TQQQ</span><span>$${st.current_price}</span></div>
@@ -261,10 +262,10 @@ D.trades.forEach(t=>{
   markRow(t.entry_date,  ei, buyTxt, '#3fb950',  62, -34, doVix, doRsi);
   if(!t.open) markRow(t.exit_date, xi, sellTxt, '#f85149', -64, -52, doVix, doRsi);
 
-  /* TQQQ price panel: same boxes, fanned out and lifted away from the candles */
-  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',  0, -96));
-  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  66, -52));
-  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -66, -70));
+  /* TQQQ price panel: identical boxes to the RSI panel (same content + fan-out) */
+  if(si>=0 && D.tqqq[si]!=null) trigAnn.push(tbox(t.signal_date, D.tqqq[si], 'y', sigTxt, '#f0883e',   0, -64));
+  trigAnn.push(tbox(t.entry_date, t.entry_price, 'y', buyTxt, '#3fb950',  62, -34));
+  if(!t.open) trigAnn.push(tbox(t.exit_date, t.exit_price, 'y', sellTxt, '#f85149', -64, -52));
 });
 
 const lastDate = dates[dates.length-1];
@@ -273,14 +274,14 @@ const init = d1y.toISOString().slice(0,10);
 
 const layout = {
   paper_bgcolor:'#1a2029', plot_bgcolor:'#1a2029', font:{color:'#9aa7b4',size:12},
-  showlegend:true, legend:{orientation:'h',y:1.03,x:0,font:{color:'#e6edf3'}},
+  showlegend:true, legend:{orientation:'h',y:1.005,x:0,yanchor:'bottom',font:{color:'#e6edf3'}},
   margin:{l:55,r:20,t:10,b:30}, hovermode:'x unified', dragmode:'zoom',
   annotations:trigAnn,
   xaxis:{domain:[0,1],anchor:'y3',gridcolor:'#2d333b',range:[init,lastDate],
     rangeslider:{visible:false},
     rangebreaks:[{bounds:['sat','mon']},{values:D.holidays}],
     rangeselector:{bgcolor:'#0f1419',activecolor:'#f0883e',bordercolor:'#2d333b',borderwidth:1,
-      font:{color:'#e6edf3'},x:0,y:1.10,
+      font:{color:'#e6edf3'},x:0,y:1.03,yanchor:'bottom',
       buttons:[
         {count:3,label:'3M',step:'month',stepmode:'backward'},
         {count:6,label:'6M',step:'month',stepmode:'backward'},
