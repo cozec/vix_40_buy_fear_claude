@@ -82,6 +82,8 @@
 
 <div class="wrap">
 
+  <p class="note" style="margin-top:26px">🌐 <a href="report_en.html" style="color:var(--blue)">English version</a></p>
+
   <h2>一、策略概述</h2>
   <div class="card">
     <p><strong>核心思想：</strong>利用 VIX 恐慌指数的极端飙升与标普 500 周线 RSI 的结构性超卖，在市场最恐慌的时刻买入 3 倍做多纳指 ETF（<strong>TQQQ</strong>），并耐心持有，吃完整轮复苏行情。所谓「别人恐惧我贪婪」。</p>
@@ -230,12 +232,51 @@
     </ul>
   </div>
 
+  <h2>八、改进计划：样本外验证与最终结论</h2>
+  <p class="note">针对第七节的担忧，我们按 <code>IMPROVEMENT_PLAN.md</code> 逐步做了严格检验——样本外、出场、仓位、灾难规则、稳健性、组合层面。核心结论：<strong>信号是真的，但 43% 不可外推，满仓 3 倍不可交易；正确用法是「30% 仓位的卫星策略」。</strong></p>
+
+  <div class="card">
+    <table>
+      <thead><tr><th style="text-align:left">步骤</th><th style="text-align:left">检验</th><th style="text-align:left">闸门结果</th></tr></thead>
+      <tbody>
+        <tr><td style="text-align:left"><strong>1 样本外</strong></td><td style="text-align:left">同一规则用于标普 500 长史（1970–2025，32 笔）</td><td style="text-align:left" class="pos">通过：2010 年前胜率 65–74%、正收益——<strong>并非只在 2010 后牛市成立</strong></td></tr>
+        <tr><td style="text-align:left"><strong>2 出场</strong></td><td style="text-align:left">MA100 → MA50、追踪止损、分批止盈</td><td style="text-align:left">采用 <strong>MA50</strong>（免费提升：CAGR 45.7%、回撤 -58%、夏普 1.01）；追踪止损会卖在恐慌里、错过反弹</td></tr>
+        <tr><td style="text-align:left"><strong>3 仓位</strong></td><td style="text-align:left">满仓 3× vs 分数仓 vs 1×/2×/3×</td><td style="text-align:left" class="neg">满仓 3× 长史回撤 <strong>-94%（等同清零）</strong>——须在组合层降低敞口</td></tr>
+        <tr><td style="text-align:left"><strong>4 灾难规则</strong></td><td style="text-align:left">单日暴跌强制减仓</td><td style="text-align:left">真实风险是「多周阴跌」，单日规则治不了；仅设 <strong>-40%（≈标的 -13%）熔断</strong>作零成本尾部保险</td></tr>
+        <tr><td style="text-align:left"><strong>5 稳健性</strong></td><td style="text-align:left">144 组参数 + 交易序列自助法</td><td style="text-align:left" class="pos">通过：144 组<strong>全部盈利</strong>（CAGR 20–51%）；自助法 98% 为正——非过拟合</td></tr>
+        <tr><td style="text-align:left"><strong>6 组合</strong></td><td style="text-align:left">30% 策略 + 70% 核心，年再平衡</td><td style="text-align:left">常态回撤 <strong>-22 ~ -34%</strong> / 年化 20–25%；核心须含债券/现金压舱</td></tr>
+      </tbody>
+    </table>
+    <p class="note">已采用的策略在描述上仅将出场由 MA100 改为 <strong>MA50</strong>（同样 1 年最低持有 + 标普跌破均线才卖），其余不变。样本外、出场、仓位、稳健性四关均通过。</p>
+  </div>
+
+  <h3>推荐的「已定仓」组合（30% 卫星 + 70% 含压舱核心）</h3>
+  <div class="grid">
+    <div class="kpi"><div class="v">30%</div><div class="l">3× 策略卫星仓位</div></div>
+    <div class="kpi"><div class="v">~23%</div><div class="l">组合年化（常态）</div></div>
+    <div class="kpi"><div class="v">-26%</div><div class="l">组合最大回撤（60/40 核心）</div></div>
+    <div class="kpi"><div class="v">65–74%</div><div class="l">样本外胜率（2010 前）</div></div>
+    <div class="kpi"><div class="v">~30%</div><div class="l">策略层 CAGR（参数中位数）</div></div>
+  </div>
+  <p class="note">数字来自 <code>src/out_of_sample.py</code>、<code>exit_variants.py</code>、<code>sizing.py</code>、<code>catastrophe.py</code>、<code>sensitivity.py</code>、<code>portfolio.py</code>，明细见 <code>results/variants.csv</code> 与各 <code>plots/*.png</code>。</p>
+
+  <div class="disclaimer" style="background:rgba(63,185,80,.08);border-color:rgba(63,185,80,.4);color:#bfe6c4">
+    <strong>🚦 最终裁决：谨慎实盘（卫星仓位），而非搁置，也不是「照回测满仓」。</strong>
+    <ul style="margin:10px 0 0">
+      <li><strong>可以交易</strong>——因为信号通过了样本外（1970–2025）与稳健性（144 组参数 + 自助法）检验，不是曲线拟合。</li>
+      <li><strong>按已定仓方案执行：</strong>3× 策略仅占总资产 <strong>30%</strong>，其余 70% 为<strong>含债券/现金压舱</strong>的分散核心；<strong>每年再平衡</strong>；出场用 MA50；再加 <strong>-40% 单日熔断</strong>兜底。</li>
+      <li><strong>期望值要打折：</strong>策略层按参数中位数 ~30%（非 45.7%），组合层常态约 20–25% 年化。</li>
+      <li><strong>必须预先接受回撤：</strong>常态组合 -25 ~ -35%；若遇 2000–2008 式重演且核心全为股票，组合可达 <strong>-70%</strong>（这正是要有压舱物、且卫星只占 30% 的原因）。<strong>承受不了就不要交易。</strong></li>
+      <li><strong>先纸面 / 小资金跑一个完整周期</strong>（含一次真实回撤），再考虑放大。</li>
+    </ul>
+  </div>
+
   <div class="disclaimer">
     <strong>⚠️ 风险提示：</strong>本报告仅为历史数据回测与教育研究用途，<strong>不构成任何投资建议</strong>。TQQQ 为 3 倍杠杆 ETF，波动与回撤极大（裸持最大回撤超 -80%），存在波动率损耗与本金大幅亏损风险。历史业绩不代表未来表现；样本仅 10 笔交易，统计意义有限，且未计入交易成本、滑点与税费。请勿据此实盘操作。
   </div>
 
   <footer>
-    VIX &gt; 40「恐慌抄底」策略回测 · 生成于 2026-06-28 · 数据区间 2010-02-11 → 2026-06-26
+    VIX &gt; 40「恐慌抄底」策略回测 · 生成于 2026-06-28 · 第八节改进计划验证更新于 2026-07-03 · 数据区间 2010-02-11 → 2026-06-26
   </footer>
 
 </div>
