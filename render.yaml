@@ -13,4 +13,4 @@ services:
       - key: PYTHON_VERSION
         value: "3.13.4"
       - key: AUTO_UPDATE
-        value: "1"              # refresh CSVs on boot + daily
+        value: "0"              # Yahoo blocks datacenter IPs; serve the committed seed CSVs

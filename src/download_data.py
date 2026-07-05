@@ -23,6 +23,11 @@ TICKERS = {
 def main():
     for ticker, fname in TICKERS.items():
         df = yf.download(ticker, start=START, auto_adjust=True, progress=False)
+        # Never overwrite a good CSV with an empty/failed download — Yahoo can
+        # rate-limit or block datacenter IPs and return nothing.
+        if df is None or df.empty:
+            print(f"{ticker:6s} -> empty download; keeping existing {fname}")
+            continue
         # yfinance returns MultiIndex columns (Price, Ticker); keep our column order.
         df = df[COLS]
         path = os.path.join(DATA, fname)
