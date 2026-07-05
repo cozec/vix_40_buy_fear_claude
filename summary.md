@@ -13,15 +13,15 @@ The best/adopted configuration, distilled from all 7 improvement-plan steps:
 | Component | Rule |
 |---|---|
 | **Signal** | VIX close > 40 **OR** S&P 500 weekly RSI(14) < 35 *(RSI uses a simple MA of gains/losses, not Wilder)* |
-| **Entry** | Buy the close **9 trading days** after the signal (the delay repeatedly buys lower) |
+| **Entry** | *Undecided — three options (see Performance table):* **+3 days** or **+9 days** after the signal, or **MA5 confirmation** (first close back above the 5-day MA, cap 20d). +9d is in-sample best (COVID); +3d/MA5 are out-of-sample-favoured. |
 | **Exit** | Hold **≥ 1 year**, then sell on the first S&P close below its **MA50** *(the Step-2 upgrade from MA100)* |
 | **Instrument** | TQQQ (3× Nasdaq-100), full capital within the sleeve |
 | **Catastrophe stop** | Sell all if TQQQ drops **≥ 40% in one day** (≈ QQQ −13%) — zero-cost tail insurance |
 | **Position (portfolio)** | The 3× sleeve is **30% of total assets**; other **70% = diversified core with bond/cash ballast**; **rebalance annually** |
 | **One position at a time** | New signals ignored while invested |
 
-**Backtested performance (strategy sleeve, full 3× TQQQ, MA50 exit, 2010–2026):** final equity **$4.73M**, CAGR **45.7%**, MaxDD **−58%**, Sharpe **1.01**, 10/10 wins.
-**Realistic sized expectation (30% sleeve + 70% ballasted core, annual rebalance):** **~20–25% blended CAGR** at **−25% to −35%** normal drawdown; plan for **~30%** strategy-level CAGR (parameter median), not 45.7%.
+**Backtested performance (strategy sleeve, full 3× TQQQ, MA50 exit, 2010–2026), by entry option:** **+9d** $4.73M / 45.7% / −58% / Sharpe 1.01 · **+3d** $2.28M / 39.4% / −67.6% / 0.91 · **MA5-confirm** $1.98M / 38.1% / −67.1% / 0.89 — all 10/10 wins. +9d is in-sample best (driven by the one COVID trade); +3d and MA5 are favoured by the 55-year out-of-sample test.
+**Realistic sized expectation (30% sleeve + 70% ballasted core, annual rebalance):** **~20–25% blended CAGR** at **−25% to −35%** normal drawdown; plan for **~30%** strategy-level CAGR (parameter median), not the headline in-sample figure.
 
 **Window:** 2010-02-11 → 2026-06-26  ·  **Start capital:** $10,000  ·  **Trades:** 10 (100% win rate)
 
@@ -31,17 +31,24 @@ Data refreshed from Yahoo Finance (split/dividend-adjusted) through 2026-06-26. 
 
 Ordered by final equity. Alpha/Beta measured against Buy & Hold TQQQ.
 
-| Strategy | Final Equity | Return % | CAGR % | Max DD % | Sharpe | Alpha | Beta |
+All rows use the **MA50 exit**; the three strategy rows are the **entry options under consideration** (undecided). Ordered by final equity.
+
+| Strategy (entry option) | Final Equity | Return % | CAGR % | Max DD % | Sharpe | Alpha | Beta |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| **VIX40 Strategy — MA50 exit (adopted)** | **$4,733,454** | **47,234.5** | **45.69** | **-58.23** | **1.01** | **0.14** | **0.66** |
-| VIX40 Strategy — MA100 exit (baseline) | $3,623,260 | 36,132.6 | 43.33 | -61.57 | 0.97 | 0.11 | 0.69 |
+| VIX40 — entry **+9 days** | $4,733,454 | 47,234.5 | 45.69 | -58.23 | 1.01 | 0.14 | 0.66 |
 | Buy & Hold TQQQ | $3,485,958 | 34,759.6 | 42.99 | -81.66 | 0.90 | -0.00 | 1.00 |
+| VIX40 — entry **+3 days** | $2,284,690 | 22,746.9 | 39.35 | -67.62 | 0.91 | 0.08 | 0.69 |
+| VIX40 — entry **MA5 confirmation** | $1,982,154 | 19,721.5 | 38.14 | -67.11 | 0.89 | 0.07 | 0.70 |
+
+*(Original MA100-exit baseline: $3,623,260 / 43.33% / −61.57% / Sharpe 0.97 — see §"Re-engineering the Exit". **MA5 confirmation** = buy the first close back above the 5-day MA after the signal, capped at 20 trading days.)*
 
 ### Takeaways
-- With the **SMA-based RSI** and the **adopted MA50 exit**, the strategy **beats** buy-&-hold TQQQ on every axis: higher final equity (**$4.73M vs $3.49M**), higher CAGR (45.7% vs 43.0%), much smaller max drawdown (**-58% vs -82%**), and a higher Sharpe (1.01 vs 0.90) — all at a beta of 0.66 with positive alpha. The MA100 baseline (2nd row) also beats B&H; MA50 just exits the cracked uptrend sooner. The **risk-adjusted edge is intact**.
-- The less-smoothed SMA RSI is **more sensitive** than Wilder's, firing on more capitulation events.
-- Every one of the 10 entries was profitable.
-- **The 9-trading-day entry delay helps**: waiting ~2 weeks after the panic signal repeatedly bought lower (e.g. COVID at $5.34 vs $9.49 on the signal day).
+- **Entry timing is undecided — three reasonable options, all with the MA50 exit:**
+  - **+9 days** — in-sample best ($4.73M), the only option to beat B&H here; but that edge is almost entirely the **COVID** trade (patiently caught $5.34 → +456%), and the 55-year out-of-sample test says a fixed 9-day wait is *worse* on average.
+  - **+3 days** — favoured by the out-of-sample test; on 2010–2026 it gives up the COVID windfall (buys $10.61 before the second leg → +80%), landing below B&H in-sample.
+  - **MA5 confirmation** — buys the first bounce back above the 5-day MA; adapts to the crash's length, but gets whipsawed by COVID-style dead-cat bounces (entered $10.45), so it is in-sample lowest.
+- **The entry is a weak, double-edged lever:** +9d wins on deep second-leg crashes (COVID); +3d / MA5 win on fast V-recoveries and out-of-sample. **None dominates** — see `plots/signal_trade_*.png` for the per-trade comparison.
+- Across all rows the **SMA-based RSI** signal is identical; only the entry rule differs, and every one of the 10 entries was profitable in each variant.
 
 ## Out-of-Sample Validation (IMPROVEMENT_PLAN Phase 1, Step 1)
 
@@ -217,26 +224,32 @@ Sleeve size is already fixed (**30% of assets** in the 3× strategy), so we skip
 
 ## Trade Log (all 10 trades)
 
-Signal Date = day the condition fired (on close). Entry Date = the close **9 trading days later**, where the position is actually bought. Trigger shows the condition and its value on the signal day.
+Signal Date = day the condition fired (on close). Entry Date = the close **9 trading days later**, where the position is actually bought. Trigger shows the condition and its value on the signal day. Max DD % = worst close-to-entry dip while the position was held (DD-from-buy; 0.0 = never closed below entry).
 
 ### VIX40 Strategy — MA50 exit (adopted)
 
 The working strategy: same entries, but exits on the first S&P close < **MA50** after the 1-year lock. It exits cracked uptrends sooner than MA100 — note trade 6 (COVID) is banked 2021-06-18 (+393%) instead of riding to 2021-09-30, and trades 4/5/8 exit earlier at different prices. Final equity **$4,733,454** (CAGR 45.69%, MaxDD −58.23%).
 
-| # | Signal Date | Entry Date | Trigger | Entry $ | Exit Date | Exit $ | Return % | Hold Days | Capital After |
-|---|---|---|---|---:|---|---:|---:|---:|---:|
-| 1 | 2010-05-07 | 2010-05-20 | VIX 41.0 > 40 | 0.21 | 2011-05-23 | 0.41 | +93.0 | 368 | $19,303 |
-| 2 | 2011-08-05 | 2011-08-18 | RSI 28.0 < 35 | 0.28 | 2012-10-19 | 0.53 | +90.7 | 428 | $36,818 |
-| 3 | 2015-08-21 | 2015-09-03 | RSI 29.4 < 35 | 1.82 | 2016-09-09 | 2.27 | +24.7 | 372 | $45,924 |
-| 4 | 2016-11-04 | 2016-11-17 | RSI 30.7 < 35 | 2.47 | 2018-02-05 | 5.70 | +130.4 | 445 | $105,802 |
-| 5 | 2018-10-26 | 2018-11-08 | RSI 34.9 < 35 | 6.73 | 2020-02-24 | 11.42 | +69.7 | 473 | $179,573 |
-| 6 | 2020-02-28 | 2020-03-12 | VIX 40.1 > 40 | 5.34 | 2021-06-18 | 26.36 | +393.3 | 463 | $885,749 |
-| 7 | 2022-05-13 | 2022-05-26 | RSI 30.6 < 35 | 14.48 | 2023-08-15 | 18.96 | +31.0 | 446 | $1,159,999 |
-| 8 | 2023-10-20 | 2023-11-02 | RSI 32.6 < 35 | 17.64 | 2024-12-18 | 40.51 | +129.6 | 412 | $2,662,943 |
-| 9 | 2025-03-14 | 2025-03-27 | RSI 32.0 < 35 | 30.93 | 2026-03-27 | 38.78 | +25.4 | 365 | $3,338,393 |
-| 10 | 2026-03-30 | 2026-04-13 | RSI 28.2 < 35 | 50.66 | *open* 2026-06-26 | 71.83 | +41.8 | 74 | $4,733,454 |
+| # | Signal Date | Entry Date | Trigger | Entry $ | Exit Date | Exit $ | Return % | Max DD % | Hold Days | Capital After |
+|---|---|---|---|---:|---|---:|---:|---:|---:|---:|
+| 1 | 2010-05-07 | 2010-05-20 | VIX 41.0 > 40 | 0.21 | 2011-05-23 | 0.41 | +93.0 | −14.6 | 368 | $19,303 |
+| 2 | 2011-08-05 | 2011-08-18 | RSI 28.0 < 35 | 0.28 | 2012-10-19 | 0.53 | +90.7 | −5.6 | 428 | $36,818 |
+| 3 | 2015-08-21 | 2015-09-03 | RSI 29.4 < 35 | 1.82 | 2016-09-09 | 2.27 | +24.7 | −23.0 | 372 | $45,924 |
+| 4 | 2016-11-04 | 2016-11-17 | RSI 30.7 < 35 | 2.47 | 2018-02-05 | 5.70 | +130.4 | −5.9 | 445 | $105,802 |
+| 5 | 2018-10-26 | 2018-11-08 | RSI 34.9 < 35 | 6.73 | 2020-02-24 | 11.42 | +69.7 | −46.2 | 473 | $179,573 |
+| 6 | 2020-02-28 | 2020-03-12 | VIX 40.1 > 40 | 5.34 | 2021-06-18 | 26.36 | +393.3 | −20.7 | 463 | $885,749 |
+| 7 | 2022-05-13 | 2022-05-26 | RSI 30.6 < 35 | 14.48 | 2023-08-15 | 18.96 | +31.0 | −46.4 | 446 | $1,159,999 |
+| 8 | 2023-10-20 | 2023-11-02 | RSI 32.6 < 35 | 17.64 | 2024-12-18 | 40.51 | +129.6 | 0.0 | 412 | $2,662,943 |
+| 9 | 2025-03-14 | 2025-03-27 | RSI 32.0 < 35 | 30.93 | 2026-03-27 | 38.78 | +25.4 | −37.6 | 365 | $3,338,393 |
+| 10 | 2026-03-30 | 2026-04-13 | RSI 28.2 < 35 | 50.66 | *open* 2026-06-26 | 71.83 | +41.8 | 0.0 | 74 | $4,733,454 |
 
 *Trade 10 is still open (held 74 days < 365-day minimum); marked-to-market at the final close.*
+
+**Why the worst per-trade Max DD (−46.4%) is smaller than the portfolio Max DD (−58.23%):** they anchor the drawdown to different reference points, and both come from the *same* trade #7 through the 2022 bear market.
+- **Per-trade Max DD (DD-from-buy)** measures the worst dip **below your entry price**. Trade #7 entered at $14.48 and bottomed at $7.76 → −46.4%. It ignores any give-back of *unrealized* profit.
+- **Portfolio Max DD** ([`metrics()` in `src/backtest.py`](src/backtest.py)) is peak-to-trough on the daily **mark-to-market equity curve**, whose peak includes unrealized gains. Trade #7 first ran to +55% (TQQQ ~$18.57, equity peak $1.14M on 2022-08-15), then fell to $7.76 (equity $474k on 2022-12-28): $18.57 → $7.76 = **−58.2%**, matching the benchmark table's −58.23%.
+
+So whenever a position rallies before it crashes, the account's high-water mark sits **above** your cost basis, making the portfolio drawdown deeper than the from-entry dip. Since the position is a single full-size lump, while invested the equity swing equals the TQQQ price swing — which is why the two −58.2% figures line up exactly. **−46.4% = worst pain vs what you paid; −58.23% = worst pain vs the account's peak** — the latter is the number for risk/position-sizing.
 
 ### VIX40 Strategy — MA100 exit (baseline)
 

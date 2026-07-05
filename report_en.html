@@ -92,11 +92,11 @@
     </div>
     <div class="rule">
       <div class="tag">Entry</div>
-      <div class="body">After the signal, <strong>wait 9 trading days</strong> and buy TQQQ at the <strong>close</strong> of the 9th day.</div>
+      <div class="body">Buy TQQQ at the <strong>close</strong> after the signal. The entry timing is an <strong>open choice</strong>: <strong>+3d / +9d / MA5 confirmation</strong> (all three are marked on every chart, §5). The trade table below illustrates <strong>+9d</strong> (best in this window, mostly thanks to the COVID trade).</div>
     </div>
     <div class="rule">
       <div class="tag">Exit</div>
-      <div class="body"><strong>Hold at least 1 year</strong>, then sell at the close of the first day the S&amp;P 500 closes below its <strong>100-day moving average (MA100)</strong>. <em>(The adopted version switches this to MA50 — see §8.)</em></div>
+      <div class="body"><strong>Hold at least 1 year</strong>, then sell at the close of the first day the S&amp;P 500 closes below its <strong>50-day moving average (MA50)</strong>.</div>
     </div>
     <div class="rule">
       <div class="tag">Position</div>
@@ -106,53 +106,53 @@
 
   <h2>2. Core Performance</h2>
   <div class="grid">
-    <div class="kpi"><div class="v">$3.62M</div><div class="l">Final equity</div></div>
-    <div class="kpi"><div class="v">43.3%</div><div class="l">CAGR</div></div>
-    <div class="kpi"><div class="v">-61.6%</div><div class="l">Max drawdown</div></div>
-    <div class="kpi"><div class="v">0.97</div><div class="l">Sharpe</div></div>
+    <div class="kpi"><div class="v">$4.73M</div><div class="l">Final equity</div></div>
+    <div class="kpi"><div class="v">45.7%</div><div class="l">CAGR</div></div>
+    <div class="kpi"><div class="v">-58.2%</div><div class="l">Max drawdown</div></div>
+    <div class="kpi"><div class="v">1.01</div><div class="l">Sharpe</div></div>
     <div class="kpi"><div class="v">10 / 10</div><div class="l">100% win rate</div></div>
   </div>
 
   <h3>Strategy vs. Benchmark (Buy &amp; Hold TQQQ)</h3>
-  <p class="note">Ordered by final equity; Alpha / Beta measured against Buy &amp; Hold TQQQ.</p>
+  <p class="note">Illustrated config: <strong>+9d entry · MA50 exit</strong> (entry is an open choice — the three options are marked on every chart in §5). Ordered by final equity; Alpha / Beta measured against Buy &amp; Hold TQQQ.</p>
   <table>
     <thead>
       <tr><th>Strategy</th><th>Final Equity</th><th>Return %</th><th>CAGR %</th><th>Max DD %</th><th>Sharpe</th><th>Alpha</th><th>Beta</th></tr>
     </thead>
     <tbody>
       <tr class="hl">
-        <td>VIX40 Strategy (TQQQ)</td><td>$3,623,260</td><td class="pos">36,132.6</td><td>43.33</td><td>-61.57</td><td>0.97</td><td>0.11</td><td>0.69</td>
+        <td>VIX40 Strategy (TQQQ, +9d/MA50, illustrated)</td><td>$4,733,454</td><td class="pos">47,234.5</td><td>45.69</td><td>-58.23</td><td>1.01</td><td>0.14</td><td>0.66</td>
       </tr>
       <tr>
         <td>Buy &amp; Hold TQQQ</td><td>$3,485,958</td><td class="pos">34,759.6</td><td>42.99</td><td>-81.66</td><td>0.90</td><td>-0.00</td><td>1.00</td>
       </tr>
     </tbody>
   </table>
-  <p>The strategy <strong>beats buy-and-hold TQQQ on every axis</strong>: higher final equity ($3.62M vs $3.49M), higher CAGR (43.3% vs 43.0%), a much smaller max drawdown (<strong>-62% vs -82%</strong>), higher Sharpe (0.97 vs 0.90), all at a beta of just 0.69 with positive alpha. TQQQ's sharp 2026 rally narrowed the equity gap, but the <strong>risk-adjusted edge is intact</strong> — more return for less risk exposure.</p>
+  <p>The illustrated <strong>+9d-entry</strong> config <strong>beats buy-and-hold TQQQ on every axis</strong>: higher final equity ($4.73M vs $3.49M), higher CAGR (45.7% vs 43.0%), a much smaller max drawdown (<strong>-58% vs -82%</strong>), higher Sharpe (1.01 vs 0.90), all at a beta of just 0.66 with positive alpha. <strong>But that owes a great deal to the single COVID trade</strong> (+9d patiently caught $5.34 → +456%); the out-of-sample test (§8) shows a fixed 9-day delay is <em>not</em> the robust choice — so +3d and MA5 confirmation are kept as alternatives ($2.28M / $1.98M respectively in this window).</p>
 
   <h2>3. Equity Curve</h2>
   <div class="card">
-    <img src="plots/equity_curve.png" alt="Equity curve: VIX40 strategy vs Buy &amp; Hold TQQQ (log scale)">
-    <p class="note">Log-scale y-axis (start $10,000). The strategy sits in cash most of the time and only enters after panic — so the curve climbs in steps and sidesteps the deep drawdowns that buy-and-hold TQQQ suffered in 2018, 2020, and 2022.</p>
+    <img src="plots/equity_curve.png" alt="Equity curve: VIX40 strategy (+9d/MA50) vs Buy &amp; Hold TQQQ (log scale)">
+    <p class="note">Log-scale y-axis (start $10,000), illustrated <strong>+9d entry / MA50 exit</strong>. The strategy sits in cash most of the time and only enters after panic — so the curve climbs in steps and sidesteps the deep drawdowns buy-and-hold TQQQ suffered in 2018, 2020, and 2022 (-58% vs -82%).</p>
   </div>
 
   <h2>4. Full Trade Log (all 10 trades)</h2>
-  <p class="note">Signal Date = the day the condition fired (on close); Entry Date = the close of the 9th trading day after, where the buy actually happens; Trigger shows the condition and its value that day.</p>
+  <p class="note">Signal Date = the day the condition fired (on close); Entry Date = the close of the <strong>9th</strong> trading day after (illustrated here; +3d / MA5 alternatives are marked on the charts); exit is the first S&amp;P close below <strong>MA50</strong> after the 1-year hold; Trigger shows the condition and its value that day; Max DD % = worst close-to-entry dip while held (DD-from-buy; 0.0 = never closed below entry).</p>
   <table>
     <thead>
-      <tr><th>#</th><th>Signal Date</th><th>Entry Date</th><th>Trigger</th><th>Entry $</th><th>Exit Date</th><th>Exit $</th><th>Return %</th><th>Hold Days</th><th>Capital After</th></tr>
+      <tr><th>#</th><th>Signal Date</th><th>Entry Date</th><th>Trigger</th><th>Entry $</th><th>Exit Date</th><th>Exit $</th><th>Return %</th><th>Max DD %</th><th>Hold Days</th><th>Capital After</th></tr>
     </thead>
     <tbody>
-      <tr><td>1</td><td>2010-05-07</td><td>2010-05-20</td><td>VIX 41.0 &gt; 40</td><td>0.21</td><td>2011-06-01</td><td>0.41</td><td class="pos">+94.3</td><td>377</td><td>$19,427</td></tr>
-      <tr><td>2</td><td>2011-08-05</td><td>2011-08-18</td><td>RSI 28.0 &lt; 35</td><td>0.28</td><td>2012-11-07</td><td>0.49</td><td class="pos">+77.2</td><td>447</td><td>$34,429</td></tr>
-      <tr><td>3</td><td>2015-08-21</td><td>2015-09-03</td><td>RSI 29.4 &lt; 35</td><td>1.82</td><td>2016-10-11</td><td>2.48</td><td class="pos">+35.9</td><td>404</td><td>$46,804</td></tr>
-      <tr><td>4</td><td>2016-11-04</td><td>2016-11-17</td><td>RSI 30.7 &lt; 35</td><td>2.47</td><td>2018-02-08</td><td>5.16</td><td class="pos">+108.8</td><td>448</td><td>$97,727</td></tr>
-      <tr><td>5</td><td>2018-10-26</td><td>2018-11-08</td><td>RSI 34.9 &lt; 35</td><td>6.73</td><td>2020-02-25</td><td>10.50</td><td class="pos">+56.0</td><td>474</td><td>$152,450</td></tr>
-      <tr><td>6</td><td>2020-02-28</td><td>2020-03-12</td><td>VIX 40.1 &gt; 40</td><td>5.34</td><td>2021-09-30</td><td>29.75</td><td class="pos">+456.6</td><td>567</td><td>$848,556</td></tr>
-      <tr><td>7</td><td>2022-05-13</td><td>2022-05-26</td><td>RSI 30.6 &lt; 35</td><td>14.48</td><td>2023-09-21</td><td>17.30</td><td class="pos">+19.5</td><td>483</td><td>$1,014,081</td></tr>
-      <tr><td>8</td><td>2023-10-20</td><td>2023-11-02</td><td>RSI 32.6 &lt; 35</td><td>17.64</td><td>2025-02-27</td><td>35.47</td><td class="pos">+101.0</td><td>483</td><td>$2,038,371</td></tr>
-      <tr><td>9</td><td>2025-03-14</td><td>2025-03-27</td><td>RSI 32.0 &lt; 35</td><td>30.93</td><td>2026-03-27</td><td>38.78</td><td class="pos">+25.4</td><td>365</td><td>$2,555,399</td></tr>
-      <tr><td>10</td><td>2026-03-30</td><td>2026-04-13</td><td>RSI 28.2 &lt; 35</td><td>50.66</td><td><em>open</em> 2026-06-26</td><td>71.83</td><td class="pos">+41.8</td><td>74</td><td>$3,623,260</td></tr>
+      <tr><td>1</td><td>2010-05-07</td><td>2010-05-20</td><td>VIX 41.0 &gt; 40</td><td>0.21</td><td>2011-05-23</td><td>0.41</td><td class="pos">+93.0</td><td class="neg">-14.6</td><td>368</td><td>$19,303</td></tr>
+      <tr><td>2</td><td>2011-08-05</td><td>2011-08-18</td><td>RSI 28.0 &lt; 35</td><td>0.28</td><td>2012-10-19</td><td>0.53</td><td class="pos">+90.7</td><td class="neg">-5.6</td><td>428</td><td>$36,818</td></tr>
+      <tr><td>3</td><td>2015-08-21</td><td>2015-09-03</td><td>RSI 29.4 &lt; 35</td><td>1.82</td><td>2016-09-09</td><td>2.27</td><td class="pos">+24.7</td><td class="neg">-23.0</td><td>372</td><td>$45,924</td></tr>
+      <tr><td>4</td><td>2016-11-04</td><td>2016-11-17</td><td>RSI 30.7 &lt; 35</td><td>2.47</td><td>2018-02-05</td><td>5.70</td><td class="pos">+130.4</td><td class="neg">-5.9</td><td>445</td><td>$105,802</td></tr>
+      <tr><td>5</td><td>2018-10-26</td><td>2018-11-08</td><td>RSI 34.9 &lt; 35</td><td>6.73</td><td>2020-02-24</td><td>11.42</td><td class="pos">+69.7</td><td class="neg">-46.2</td><td>473</td><td>$179,573</td></tr>
+      <tr><td>6</td><td>2020-02-28</td><td>2020-03-12</td><td>VIX 40.1 &gt; 40</td><td>5.34</td><td>2021-06-18</td><td>26.36</td><td class="pos">+393.3</td><td class="neg">-20.7</td><td>463</td><td>$885,749</td></tr>
+      <tr><td>7</td><td>2022-05-13</td><td>2022-05-26</td><td>RSI 30.6 &lt; 35</td><td>14.48</td><td>2023-08-15</td><td>18.96</td><td class="pos">+31.0</td><td class="neg">-46.4</td><td>446</td><td>$1,159,999</td></tr>
+      <tr><td>8</td><td>2023-10-20</td><td>2023-11-02</td><td>RSI 32.6 &lt; 35</td><td>17.64</td><td>2024-12-18</td><td>40.51</td><td class="pos">+129.6</td><td>0.0</td><td>412</td><td>$2,662,943</td></tr>
+      <tr><td>9</td><td>2025-03-14</td><td>2025-03-27</td><td>RSI 32.0 &lt; 35</td><td>30.93</td><td>2026-03-27</td><td>38.78</td><td class="pos">+25.4</td><td class="neg">-37.6</td><td>365</td><td>$3,338,393</td></tr>
+      <tr><td>10</td><td>2026-03-30</td><td>2026-04-13</td><td>RSI 28.2 &lt; 35</td><td>50.66</td><td><em>open</em> 2026-06-26</td><td>71.83</td><td class="pos">+41.8</td><td>0.0</td><td>74</td><td>$4,733,454</td></tr>
     </tbody>
   </table>
   <p class="note">* Trade 10 is still open at the end of the backtest — held 74 days (&lt; 365-day minimum), so the exit condition cannot yet trigger; marked to market at the final close.</p>
@@ -161,30 +161,31 @@
   <ul>
     <li>Entries land precisely on the classic panics: the 2010 Flash Crash, 2011 US-debt downgrade, 2015 China devaluation, 2018 Fed-hike selloff, 2020 COVID, 2022 rate-hike bear, 2023 autumn pullback, and the 2025/2026 tariff shocks.</li>
     <li>This version's RSI uses a <strong>simple moving average (SMA)</strong> instead of Wilder smoothing, making it more sensitive — it therefore caught extra oversold events in 2016-11, 2018-10, and 2023-10. The 2023-10 trade (RSI 32.6) is one Wilder smoothing (38.9) would have missed.</li>
-    <li>After the data refresh: trade 9 (entered 2025-03) held its full year and exited on <strong>2026-03-27</strong> when the S&amp;P broke MA100 (+25.4%); trade 10 then entered on the <strong>late-March 2026 pullback</strong> (SMA RSI 28.2) and is up +41.8%.</li>
-    <li>The "hold ≥ 1 year, then exit when the S&amp;P breaks its MA" rule keeps each position through the full recovery rather than selling early — the main source of the large per-trade gains on the leveraged ETF.</li>
+    <li><strong>Entry timing is a weak, double-edged lever:</strong> the illustrated +9d patiently caught COVID (trade 6) at $5.34 (+456%) — essentially the whole reason it leads in this window — whereas +3d / MA5 confirmation (buying ~$10.5) do better on fast V-recoveries and on the 55-year out-of-sample test. <strong>None dominates</strong> — every chart marks all three entry options for comparison.</li>
+    <li>After the data refresh: trade 9 (entered 2025-03) held its full year and exited on <strong>2026-03-27</strong> when the S&amp;P broke MA50 (+25.4%); trade 10 then entered in <strong>late-March 2026</strong> and is up +41.8%.</li>
+    <li>The "hold ≥ 1 year, then exit when the S&amp;P breaks MA50" rule keeps each position through the full recovery rather than selling early — the main source of the large per-trade gains on the leveraged ETF.</li>
   </ul>
 
   <h2>5. Trade-by-Trade Charts (newest first)</h2>
-  <p class="note">Each figure is a three-panel <strong>daily</strong> view: top is the <strong>TQQQ daily candlesticks</strong> with the signal day (orange dashed), buy (green ▲), sell (red ▼) and return; the middle and bottom panels show <strong>both trigger indicators</strong> — VIX (with the 40 line) and S&amp;P 500 weekly RSI(14) (with the 35 line), red shading marking where each crosses its threshold (regardless of which condition fired the trade). Still-open trades default to a <strong>1-year-from-entry</strong> window (with the "1-year minimum hold" reference line). Newest trade first.</p>
+  <p class="note">Each figure is a three-panel <strong>daily</strong> view: top is the <strong>TQQQ daily candlesticks</strong> with the <strong>signal</strong>, the <strong>three entry options</strong> (+3d blue, +9d green · used here, MA5 purple) and the <strong>exit</strong> shown as arrowed textboxes in the clear bands above and below the candles (never on the price); the middle and bottom panels show <strong>both trigger indicators</strong> — VIX (with the 40 line) and S&amp;P 500 weekly RSI(14) (with the 35 line), red shading marking where each crosses its threshold. Still-open trades default to a <strong>1-year-from-entry</strong> window. Newest first; the table illustrates +9d entry / MA50 exit.</p>
 
-  <div class="card"><img src="plots/trade_10.png" alt="Trade #10 chart"><p class="note">#10 · late-March 2026 pullback (SMA RSI 28.2) · buy $50.66 · <span class="pos">+41.8%</span> · <strong>open</strong>, ending capital $3,623,260.</p></div>
-  <div class="card"><img src="plots/trade_09.png" alt="Trade #9 chart"><p class="note">#9 · March 2025 pullback (tariff shock, RSI 32.0) · after 1 year, exited 2026-03-27 as the S&amp;P broke MA100 · <span class="pos">+25.4%</span> · ending capital $2,555,399.</p></div>
-  <div class="card"><img src="plots/trade_08.png" alt="Trade #8 chart"><p class="note">#8 · autumn 2023 pullback (RSI 32.6, missed by Wilder smoothing) · buy $17.64 → sell $35.47 · <span class="pos">+101.0%</span> · ending capital $2,038,371.</p></div>
-  <div class="card"><img src="plots/trade_07.png" alt="Trade #7 chart"><p class="note">#7 · 2022 rate-hike bear (RSI 30.6) · buy $14.48 → sell $17.30 · <span class="pos">+19.5%</span> · ending capital $1,014,081.</p></div>
-  <div class="card"><img src="plots/trade_06.png" alt="Trade #6 chart"><p class="note">#6 · 2020 COVID crash (VIX spiked to 80+) · bought the bottom $5.34 → sold $29.75 · <span class="pos">+456.6%</span> · the biggest winner, ending capital $848,556.</p></div>
-  <div class="card"><img src="plots/trade_05.png" alt="Trade #5 chart"><p class="note">#5 · 2018 Fed-hike selloff (RSI 34.9, just tripped the threshold) · buy $6.73 → sell $10.50 · <span class="pos">+56.0%</span> · ending capital $152,450.</p></div>
-  <div class="card"><img src="plots/trade_04.png" alt="Trade #4 chart"><p class="note">#4 · mid-2016 correction (RSI 30.7) · buy $2.47 → sell $5.16 · <span class="pos">+108.8%</span> · ending capital $97,727.</p></div>
-  <div class="card"><img src="plots/trade_03.png" alt="Trade #3 chart"><p class="note">#3 · 2015 China devaluation (RSI 29.4) · buy $1.82 → sell $2.48 · <span class="pos">+35.9%</span> · ending capital $46,804.</p></div>
-  <div class="card"><img src="plots/trade_02.png" alt="Trade #2 chart"><p class="note">#2 · 2011 US-debt downgrade (RSI 28.0) · buy $0.28 → sell $0.49 · <span class="pos">+77.2%</span> · ending capital $34,429.</p></div>
-  <div class="card"><img src="plots/trade_01.png" alt="Trade #1 chart"><p class="note">#1 · 2010 Flash Crash (VIX 41.0&gt;40, one of the only non-RSI first triggers) · buy $0.21 → sell $0.41 · <span class="pos">+94.3%</span> · ending capital $19,427.</p></div>
+  <div class="card"><img src="plots/trade_10.png" alt="Trade #10 chart"><p class="note">#10 · late-March 2026 pullback (SMA RSI 28.2) · buy $50.66 · <span class="pos">+41.8%</span> · <strong>open</strong>, ending capital $4,733,454.</p></div>
+  <div class="card"><img src="plots/trade_09.png" alt="Trade #9 chart"><p class="note">#9 · March 2025 pullback (tariff shock, RSI 32.0) · after 1 year, exited 2026-03-27 as the S&amp;P broke MA50 · <span class="pos">+25.4%</span> · ending capital $3,338,393.</p></div>
+  <div class="card"><img src="plots/trade_08.png" alt="Trade #8 chart"><p class="note">#8 · autumn 2023 pullback (RSI 32.6, missed by Wilder smoothing) · buy $17.64 → sell $40.51 · <span class="pos">+129.6%</span> · ending capital $2,662,943.</p></div>
+  <div class="card"><img src="plots/trade_07.png" alt="Trade #7 chart"><p class="note">#7 · 2022 rate-hike bear (RSI 30.6) · buy $14.48 → sell $18.96 · <span class="pos">+31.0%</span> · ending capital $1,159,999.</p></div>
+  <div class="card"><img src="plots/trade_06.png" alt="Trade #6 chart"><p class="note">#6 · 2020 COVID crash (VIX spiked to 80+) · +9d bought the bottom $5.34 → sold $26.36 · <span class="pos">+393.3%</span> · the biggest winner (+3d/MA5 would buy ~$10.5, far less), ending capital $885,749.</p></div>
+  <div class="card"><img src="plots/trade_05.png" alt="Trade #5 chart"><p class="note">#5 · 2018 Fed-hike selloff (RSI 34.9, just tripped the threshold) · buy $6.73 → sell $11.42 · <span class="pos">+69.7%</span> · ending capital $179,573.</p></div>
+  <div class="card"><img src="plots/trade_04.png" alt="Trade #4 chart"><p class="note">#4 · mid-2016 correction (RSI 30.7) · buy $2.47 → sell $5.70 · <span class="pos">+130.4%</span> · ending capital $105,802.</p></div>
+  <div class="card"><img src="plots/trade_03.png" alt="Trade #3 chart"><p class="note">#3 · 2015 China devaluation (RSI 29.4) · buy $1.82 → sell $2.27 · <span class="pos">+24.7%</span> · ending capital $45,924.</p></div>
+  <div class="card"><img src="plots/trade_02.png" alt="Trade #2 chart"><p class="note">#2 · 2011 US-debt downgrade (RSI 28.0) · buy $0.28 → sell $0.53 · <span class="pos">+90.7%</span> · ending capital $36,818.</p></div>
+  <div class="card"><img src="plots/trade_01.png" alt="Trade #1 chart"><p class="note">#1 · 2010 Flash Crash (VIX 41.0&gt;40, one of the only non-RSI first triggers) · buy $0.21 → sell $0.41 · <span class="pos">+93.0%</span> · ending capital $19,303.</p></div>
 
   <h2>6. Methodology &amp; Assumptions</h2>
   <div class="card">
     <ul>
       <li><strong>Instrument &amp; data:</strong> traded instrument is TQQQ; the VIX and S&amp;P 500 data for signals come from Yahoo Finance (yfinance, split/dividend-adjusted), updated to 2026-06-26.</li>
       <li><strong>Backtest window:</strong> bounded by the start of TQQQ and VIX data, <strong>2010-02-11 → 2026-06-26</strong>.</li>
-      <li><strong>No look-ahead:</strong> signals are computed on the daily close; the entry fills at the close 9 trading days later and the exit at the trigger-day close — strictly avoiding look-ahead bias.</li>
+      <li><strong>No look-ahead:</strong> signals are computed on the daily close; the entry fills at the close 9 trading days later (illustrated; +3d / MA5 are alternatives) and the exit at the trigger-day close — strictly avoiding look-ahead bias.</li>
       <li><strong>RSI:</strong> S&amp;P 500 weekly RSI(14), using a <strong>simple moving average</strong> of gains/losses (<code>rolling(window=14).mean()</code>), not Wilder's exponential smoothing.</li>
       <li><strong>Buy-and-hold benchmark:</strong> the simple formula <code>$10,000 × (last close / first close)</code> for un-traded TQQQ.</li>
       <li><strong>Metric definitions:</strong> Sharpe is daily-return annualized (×√252); max drawdown is on the daily equity peak; Alpha / Beta are against Buy &amp; Hold TQQQ daily returns, annualized.</li>
@@ -193,7 +194,7 @@
   </div>
 
   <h2>7. Real Trading: Advantages, Disadvantages &amp; the Catch</h2>
-  <p class="note">The backtest numbers (10-for-10, ~43% CAGR, beating buy-and-hold) look spectacular — but it is <strong>precisely this "too perfect" quality that should make you wary</strong>. A sober, real-money assessment follows.</p>
+  <p class="note">The backtest numbers (10-for-10, ~46% CAGR, beating buy-and-hold) look spectacular — but it is <strong>precisely this "too perfect" quality that should make you wary</strong>. A sober, real-money assessment follows.</p>
 
   <div class="card">
     <h3>✅ Advantages</h3>
@@ -201,7 +202,7 @@
       <li><strong>Buy in panic, sell in strength.</strong> Extreme VIX / deep oversold conditions have historically offered better forward risk/reward — systematically doing the most counter-human thing: being greedy when others are fearful.</li>
       <li><strong>In cash most of the time.</strong> Avoids the volatility decay of leveraged ETFs in choppy markets, taking 3× exposure only when a signal appears (roughly once every 1–2 years).</li>
       <li><strong>Rule-based and unemotional.</strong> The hardest part of "buying the dip" is actually pulling the trigger; a mechanical rule does it for you.</li>
-      <li><strong>Better risk-adjusted than buy-and-hold TQQQ.</strong> Smaller max drawdown in the backtest (-62% vs -82%), higher Sharpe, positive alpha.</li>
+      <li><strong>Better risk-adjusted than buy-and-hold TQQQ.</strong> Smaller max drawdown in the backtest (-58% vs -82%), higher Sharpe, positive alpha.</li>
       <li><strong>Cost- and tax-friendly.</strong> Very few trades; every hold exceeds 1 year, taxed as long-term capital gains, commissions negligible.</li>
     </ul>
   </div>
@@ -211,14 +212,14 @@
     <ul>
       <li><strong>Structural decay of a 3× leveraged ETF.</strong> TQQQ resets daily and decays in choppy markets even when QQQ is flat — it is a <strong>trading tool, not a buy-and-hold instrument</strong>.</li>
       <li><strong>Path dependence / risk of ruin.</strong> A single-day crash can be irreversible: QQQ -22% in a day (like 1987) ≈ TQQQ <strong>-66% in a day</strong>; a -34% underlying day is mathematically a wipeout. Leveraged ETFs can also be reverse-split or liquidated by the issuer.</li>
-      <li><strong>The exit is loose and late.</strong> "Hold ≥ 1 year, then sell only when the S&amp;P breaks MA100" can keep you in 3× exposure through much of a bear market (e.g. most of 2022). It is the most impactful yet most weakly defined piece.</li>
+      <li><strong>The exit is loose and late.</strong> "Hold ≥ 1 year, then sell only when the S&amp;P breaks MA50" can keep you in 3× exposure through much of a bear market (e.g. most of 2022). It is the most impactful yet most weakly defined piece.</li>
       <li><strong>All-in, single position, highly concentrated.</strong> No diversification; the whole bet rides on one instrument — a single point of failure.</li>
       <li><strong>Requires stomaching huge drawdowns.</strong> The strategy itself draws down over -60%. The backtest assumes you sit through it perfectly still — <strong>almost nobody actually can</strong>.</li>
     </ul>
   </div>
 
   <div class="disclaimer" style="background:rgba(240,136,62,.08);border-color:rgba(240,136,62,.4);color:#e8c8a8">
-    <strong>🎯 The biggest catch:</strong> "10 trades, 100% win rate" is a <strong>warning sign, not a selling point</strong>. Just 10 samples over 16 years proves nothing statistically — it is the textbook signature of <strong>overfitting to a benign regime</strong> — and we <strong>tuned parameters repeatedly on the same history</strong> (switching RSI from Wilder to SMA because "results were better," a 9-day delay that happened to buy lower). At its core this is a <strong>leveraged bet that "US tech always rebounds within 1–2 years"</strong>: true since 2010 (zero rates, Fed backstop, an epic tech bull) but <strong>not a law of nature</strong>. In a 2000–2013 or Japan-1990-style "lost decade," "buy the dip + hold 3× leverage" compounds against you and the loose exit traps you. <strong>With leverage, one permanent loss of capital can wipe out ten prior wins.</strong> Also, the 43% CAGR is hugely amplified by TQQQ's tiny 2010 adjusted base ($0.21) and that once-in-a-generation bull — do not extrapolate.</div>
+    <strong>🎯 The biggest catch:</strong> "10 trades, 100% win rate" is a <strong>warning sign, not a selling point</strong>. Just 10 samples over 16 years proves nothing statistically — it is the textbook signature of <strong>overfitting to a benign regime</strong> — and we <strong>tuned parameters repeatedly on the same history</strong> (switching RSI from Wilder to SMA because "results were better"; the entry delay and exit MA were likewise picked on the same window). At its core this is a <strong>leveraged bet that "US tech always rebounds within 1–2 years"</strong>: true since 2010 (zero rates, Fed backstop, an epic tech bull) but <strong>not a law of nature</strong>. In a 2000–2013 or Japan-1990-style "lost decade," "buy the dip + hold 3× leverage" compounds against you and the loose exit traps you. <strong>With leverage, one permanent loss of capital can wipe out ten prior wins.</strong> Also, the ~46% CAGR is hugely amplified by TQQQ's tiny 2010 adjusted base (~$0.2) and that once-in-a-generation bull — do not extrapolate.</div>
 
   <div class="card">
     <h3>🛡️ If you still trade it — risk-control advice</h3>
@@ -232,7 +233,7 @@
   </div>
 
   <h2>8. Improvement Plan: Out-of-Sample Validation &amp; Final Verdict</h2>
-  <p class="note">To address the concerns in §7, we ran the strict step-by-step checks in <code>IMPROVEMENT_PLAN.md</code> — out-of-sample, exit, sizing, catastrophe rule, robustness, and portfolio framing. Bottom line: <strong>the signal is real, but 43% is not extrapolatable, and all-in 3× is untradable; the right use is a "30%-weight satellite strategy."</strong></p>
+  <p class="note">To address the concerns in §7, we ran the strict step-by-step checks in <code>IMPROVEMENT_PLAN.md</code> — out-of-sample, exit, sizing, catastrophe rule, robustness, and portfolio framing. Bottom line: <strong>the signal is real, but ~46% CAGR is not extrapolatable, and all-in 3× is untradable; the right use is a "30%-weight satellite strategy."</strong></p>
 
   <div class="card">
     <table>
@@ -246,7 +247,7 @@
         <tr><td><strong>6 Portfolio</strong></td><td>30% strategy + 70% core, annual rebalance</td><td>Normal-regime drawdown <strong>-22 to -34%</strong> / 20–25% CAGR; core must carry bond/cash ballast</td></tr>
       </tbody>
     </table>
-    <p class="note">The adopted strategy changes only the exit from MA100 to <strong>MA50</strong> (same 1-year minimum hold + sell when the S&amp;P breaks its MA); everything else is unchanged. It passed the out-of-sample, exit, sizing, and robustness gates.</p>
+    <p class="note">The adopted strategy changes the exit from MA100 to <strong>MA50</strong>; the entry timing is an <strong>open choice</strong> (+3 / +9 days or MA5 confirmation — this report illustrates +9d), with the signal and 1-year minimum hold unchanged. It passed the out-of-sample, exit, sizing, and robustness gates.</p>
   </div>
 
   <h3>Recommended "sized" portfolio (30% satellite + 70% ballasted core)</h3>

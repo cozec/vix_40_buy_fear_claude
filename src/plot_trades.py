@@ -10,6 +10,10 @@ Both triggers are always shown, whether or not they fired for that trade.
 Time range = signal..exit (+padding); for a still-open trade it defaults to a
 full year from entry so the position's intended horizon is visible.
 
+Adopted strategy: entry = close 3 trading days after the signal; exit = MA50.
+Signal / entry / exit are labelled with arrowed textboxes placed in the clear
+bands above and below the candles (never on top of the price).
+
 Saves plots/trade_01.png ... plots/trade_NN.png.
 """
 
@@ -66,10 +70,38 @@ def style_ax(ax):
     ax.grid(True, color=GRID, alpha=0.5, lw=0.6)
 
 
+ENTRY_DELAY = 9    # illustrated entry: close 9 trading days after the signal
+MA_EXIT = 50       # adopted exit: S&P below MA50 after the 1-year hold
+CONFIRM_MA = 5     # MA5-confirmation entry: first close back above the 5-day MA
+CONFIRM_CAP = 20   # ...capped at 20 trading days
+# entry-option colours
+C3, C9, CM = "#58a6ff", "#3fb950", "#bc8cff"   # +3d (blue), +9d (green, used), MA5 (purple)
+
+
+def entry_candidates(close, ma5, dates, sig):
+    """Return the three entry options (date, price) for a signal: +3d, +9d, MA5-confirm."""
+    si = dates.index(pd.Timestamp(sig))
+    out = {}
+    for lbl, off in (("+3d", 3), ("+9d", 9)):
+        j = min(si + off, len(dates) - 1)
+        out[lbl] = (dates[j], float(close.iloc[j]))
+    j = si + CONFIRM_CAP
+    for k in range(si + 1, min(si + CONFIRM_CAP + 1, len(dates))):
+        if close.iloc[k] > ma5.iloc[k]:
+            j = k
+            break
+    out["MA5"] = (dates[min(j, len(dates) - 1)], float(close.iloc[min(j, len(dates) - 1)]))
+    return out
+
+
 def main():
-    df = build_signals()                       # daily: vix_close, weekly_rsi, ...
-    trades, _ = run_backtest(df)
     tqqq = load_yf(os.path.join(DATA, "tqqq_data.csv"))
+    vix = load_yf(os.path.join(DATA, "vix_data.csv"))
+    spx = load_yf(os.path.join(DATA, "sp500_data.csv"))
+    df = build_signals(tqqq, spx, vix, ma_period=MA_EXIT)   # daily: vix_close, rsi, ...
+    trades, _ = run_backtest(df, entry_delay_days=ENTRY_DELAY)
+    ma5 = tqqq["Close"].rolling(CONFIRM_MA).mean()
+    all_dates = tqqq.index.to_list()
     last_date = tqqq.index[-1]
 
     for i, t in trades.iterrows():
@@ -111,27 +143,39 @@ def main():
             ax1.add_patch(Rectangle((x - 0.35, lo), 0.7, max(hi - lo, span * 0.002),
                                     facecolor=color, edgecolor=color, lw=0, zorder=3))
 
-        ax1.axvline(sig, color=ORANGE, ls=":", lw=1.3)
-        ax1.axvline(ent, color=UP, ls="--", lw=1.3)
-        ax1.scatter([ent], [t["Entry_Price"]], marker="^", s=120,
-                    color=UP, edgecolor="white", lw=0.6, zorder=5)
-        ax1.annotate(f"买入 ${t['Entry_Price']:.2f}", xy=(ent, t["Entry_Price"]),
-                     xytext=(-58, -44), textcoords="offset points",
-                     color=UP, fontsize=9, ha="center", va="center", zorder=6,
-                     arrowprops=dict(arrowstyle="->", color=UP, lw=1.1),
-                     bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=UP, lw=0.9))
-        ax1.annotate("信号", (sig, tq["High"].max()), color=ORANGE, fontsize=9,
-                     ha="center", va="bottom")
+        # Big clear bands above/below the candles so NO textbox touches the price.
+        ymin, ymax = float(tq["Low"].min()), float(tq["High"].max())
+        yr = (ymax - ymin) or 1.0
+        ax1.set_ylim(ymin - 0.34 * yr, ymax + 0.34 * yr)
+
+        def box(x_at, y_at, bx, by, text, color, ha="left", va="bottom", bold=False):
+            """Textbox anchored at axes-fraction (bx,by), arrow to data point (x_at,y_at)."""
+            ax1.annotate(
+                text, xy=(mdates.date2num(x_at), y_at), xycoords="data",
+                xytext=(bx, by), textcoords="axes fraction",
+                color=color, fontsize=7.6, ha=ha, va=va, zorder=9, annotation_clip=False,
+                arrowprops=dict(arrowstyle="->", color=color, lw=1.1,
+                                connectionstyle="arc3,rad=0.05"),
+                bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=color,
+                          lw=1.7 if bold else 1.0))
+
+        # signal (top-left band) and the three entry options (bottom band, spread out)
+        ax1.axvline(sig, color=ORANGE, ls=":", lw=1.0)
+        sig_hi = float(tq["High"].loc[:sig].iloc[-1]) if len(tq.loc[:sig]) else ymax
+        box(sig, sig_hi, 0.015, 0.965, f"信号 Signal\n{sig:%Y-%m-%d}\n{t['Trigger']}", ORANGE, va="top")
+
+        cand = entry_candidates(tqqq["Close"], ma5, all_dates, sig)
+        slots = {"+3d": (0.02, C3, "入场 +3日"), "+9d": (0.26, C9, "入场 +9日 ✓（本图采用）"),
+                 "MA5": (0.53, CM, "入场 MA5")}
+        for key, (bx, color, name) in slots.items():
+            ed_k, ep_k = cand[key]
+            box(ed_k, ep_k, bx, 0.02, f"{name}\n{pd.Timestamp(ed_k):%Y-%m-%d}\n${ep_k:.2f}",
+                color, bold=(key == "+9d"))
 
         if not is_open:
-            ax1.axvline(exit_d, color=DOWN, ls="--", lw=1.3)
-            ax1.scatter([exit_d], [t["Exit_Price"]], marker="v", s=120,
-                        color=DOWN, edgecolor="white", lw=0.6, zorder=5)
-            ax1.annotate(f"卖出 ${t['Exit_Price']:.2f}", xy=(exit_d, t["Exit_Price"]),
-                         xytext=(-58, 40), textcoords="offset points",
-                         color=DOWN, fontsize=9, ha="center", va="center", zorder=6,
-                         arrowprops=dict(arrowstyle="->", color=DOWN, lw=1.1),
-                         bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=DOWN, lw=0.9))
+            ax1.axvline(exit_d, color=DOWN, ls="--", lw=1.0)
+            box(exit_d, t["Exit_Price"], 0.985, 0.965,
+                f"卖出 Exit\n{exit_d:%Y-%m-%d}\n${t['Exit_Price']:.2f}", DOWN, ha="right", va="top")
             exit_lbl = exit_d.strftime("%Y-%m-%d")
         else:
             hold_end = ent + pd.Timedelta(days=365)
@@ -167,10 +211,10 @@ def main():
                      va="bottom", ha="left")
 
         # --- trigger 2: S&P weekly RSI(14) ---
-        ax3.plot(dd.index, dd["weekly_rsi"], color=BLUE, lw=1.2)
+        ax3.plot(dd.index, dd["rsi"], color=BLUE, lw=1.2)
         ax3.axhline(RSI_THRESHOLD, color=DOWN, ls="--", lw=1)
-        ax3.fill_between(dd.index, RSI_THRESHOLD, dd["weekly_rsi"],
-                         where=dd["weekly_rsi"] < RSI_THRESHOLD,
+        ax3.fill_between(dd.index, RSI_THRESHOLD, dd["rsi"],
+                         where=dd["rsi"] < RSI_THRESHOLD,
                          color=DOWN, alpha=0.25)
         ax3.set_ylabel("标普 RSI(14)", color=MUTED, fontsize=10)
         ax3.annotate("35", (dd.index[0], RSI_THRESHOLD), color=DOWN, fontsize=8,

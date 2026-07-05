@@ -127,7 +127,8 @@ def run_backtest(df, *, min_hold_days=MIN_HOLD_DAYS, entry_delay_days=ENTRY_DELA
                  leverage=LEVERAGE, annual_drag=ANNUAL_DRAG, vix_threshold=VIX_THRESHOLD,
                  rsi_threshold=RSI_THRESHOLD, exit_mode="trend", trail_pct=0.30,
                  scale_levels=(1.0, 2.0), capital_fraction=1.0, entry_offsets=None,
-                 catastrophe_ret=None, catastrophe_cooldown_days=0):
+                 catastrophe_ret=None, catastrophe_cooldown_days=0,
+                 confirm_ma=None, confirm_max_wait=20):
     """Event-driven backtest. Returns (trades DataFrame, daily equity Series).
 
     Entry: signal fires on a daily close; position is bought at the close
@@ -170,9 +171,12 @@ def run_backtest(df, *, min_hold_days=MIN_HOLD_DAYS, entry_delay_days=ENTRY_DELA
     df = df.copy()
     df["trade_close"] = _apply_leverage(df["trade_close"], leverage, annual_drag)
     rets = df["trade_close"].pct_change().to_numpy()  # daily return of traded series
+    cma = df["trade_close"].rolling(confirm_ma).mean().to_numpy() if confirm_ma else None
     has_vix = df.attrs.get("has_vix", True)
     offsets = tuple(entry_offsets) if entry_offsets is not None else (entry_delay_days,)
     cooldown_until = -1  # index before which no new entry may be scheduled
+    watching = False
+    watch_i = watch_deadline = None
 
     dates = df.index.to_list()
     n = len(dates)
@@ -210,21 +214,40 @@ def run_backtest(df, *, min_hold_days=MIN_HOLD_DAYS, entry_delay_days=ENTRY_DELA
         row = df.loc[d]
         price = row["trade_close"]
 
+        def _reasons(r):
+            out = []
+            if has_vix and r["vix_close"] > vix_threshold:
+                out.append(f"VIX {r['vix_close']:.1f}>{vix_threshold:.0f}")
+            if r["rsi"] < rsi_threshold:
+                out.append(f"RSI {r['rsi']:.1f}<{rsi_threshold:.0f}")
+            return " + ".join(out)
+
         # Schedule a new entry only when flat with nothing pending or open,
         # and not inside a post-catastrophe cooldown.
-        if not in_pos and not pending_fills and i >= cooldown_until and row["signal"]:
-            fills = [i + off for off in offsets if i + off < n]
-            if fills:
-                budget = capital_fraction * cash
-                amt = budget / len(fills)
-                pending_fills = {idx: amt for idx in fills}
-                pending_signal_date = d
-                reasons = []
-                if has_vix and row["vix_close"] > vix_threshold:
-                    reasons.append(f"VIX {row['vix_close']:.1f}>{vix_threshold:.0f}")
-                if row["rsi"] < rsi_threshold:
-                    reasons.append(f"RSI {row['rsi']:.1f}<{rsi_threshold:.0f}")
-                pending_trigger = " + ".join(reasons)
+        if not in_pos and not pending_fills and i >= cooldown_until:
+            if cma is None:
+                # Fixed-delay (or scale-in) entry: schedule tranche fills.
+                if row["signal"]:
+                    fills = [i + off for off in offsets if i + off < n]
+                    if fills:
+                        amt = capital_fraction * cash / len(fills)
+                        pending_fills = {idx: amt for idx in fills}
+                        pending_signal_date = d
+                        pending_trigger = _reasons(row)
+            else:
+                # Confirmation entry: after the signal, wait for the bounce
+                # (close back above its `confirm_ma`-day MA), capped at
+                # `confirm_max_wait` days; fill on confirmation or at the cap.
+                if not watching and row["signal"]:
+                    watching = True
+                    watch_i = i
+                    watch_deadline = i + confirm_max_wait
+                    pending_signal_date = d
+                    pending_trigger = _reasons(row)
+                if watching and i > watch_i and (
+                        (cma[i] == cma[i] and price > cma[i]) or i >= watch_deadline):
+                    pending_fills = {i: capital_fraction * cash}
+                    watching = False
 
         # Fill any tranche scheduled for today.
         if i in pending_fills:
