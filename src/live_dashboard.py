@@ -853,7 +853,10 @@ def ensure_data():
     if all(os.path.exists(p) for p in _paths().values()):
         return
     print("[startup] data CSVs missing — downloading from Yahoo...")
-    download_data.main()
+    try:
+        download_data.main()
+    except Exception as e:   # don't crash the deploy; the daily updater will retry
+        print(f"[startup] data download failed: {e} — will retry via daily updater")
 
 
 if __name__ == "__main__":
