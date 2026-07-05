@@ -6,6 +6,11 @@ __pycache__/
 # Data (large CSVs) — keep only the strategy spec README
 /data/*
 !/data/README.md
+# Seed CSVs for the cloud deploy (Yahoo is unreliable from datacenter IPs, so the
+# app ships a snapshot; the daily updater refreshes it when Yahoo is reachable).
+!/data/tqqq_data.csv
+!/data/vix_data.csv
+!/data/sp500_data.csv
 
 # Generated outputs (not checked in)
 /results/
