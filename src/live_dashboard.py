@@ -358,11 +358,11 @@ def _entry_candidates(close, ma5, all_dates, sig_date):
     return out
 
 
-def build_history(window=360):
+def build_history(window=None):
     frames = load_frames()
     d = derived(frames)
     sig, trades = d["sig"], d["trades"]
-    df = sig.iloc[-window:]
+    df = sig if window is None else sig.iloc[-window:]   # None = full history (2010→now)
     tqqq = frames["tqqq"].reindex(df.index)
     dates = [x.strftime("%Y-%m-%d") for x in df.index]
     start = df.index[0]
@@ -388,7 +388,9 @@ def build_history(window=360):
             "tqqq": _series(df["trade_close"]), "tqqq_open": _series(tqqq["Open"]),
             "tqqq_high": _series(tqqq["High"]), "tqqq_low": _series(tqqq["Low"]),
             "vix": _series(df["vix_close"]), "rsi": _series(df["rsi"]),
-            "trades": tl, "thresholds": {"vix": bt.VIX_THRESHOLD, "rsi": bt.RSI_THRESHOLD}}
+            "spx": _series(df["trend_close"]), "spx_ma": _series(df["ma"]),
+            "trades": tl, "thresholds": {"vix": bt.VIX_THRESHOLD, "rsi": bt.RSI_THRESHOLD,
+                                         "ma_period": MA_PERIOD}}
 
 
 # --- routes ----------------------------------------------------------------
@@ -450,6 +452,7 @@ PAGE = r"""<!DOCTYPE html>
   .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--line);font-size:13px}
   .row:last-child{border-bottom:none}
   .row .k{color:var(--muted)}
+  .row .v{flex:1;text-align:right}
   .pos{color:var(--green)} .neg{color:var(--red)} .hot{color:var(--accent)} .amber{color:var(--amber)}
   .big{font-size:30px;font-weight:800;letter-spacing:.5px}
   .signal-firing{color:var(--red);animation:pulse 1.3s ease-in-out infinite}
@@ -491,10 +494,19 @@ PAGE = r"""<!DOCTYPE html>
     <div class="card"><h3>S&amp;P Weekly RSI(14) <span class="muted" id="rsisub"></span></h3><div id="rsiGauge" style="height:200px"></div></div>
   </div>
 
-  <div class="card" style="text-align:center">
-    <h3>Master Signal — VIX&gt;40 OR weekly RSI&lt;35</h3>
-    <div id="sigBig" class="big signal-armed">—</div>
-    <div id="sigLegs" class="muted"></div>
+  <div class="grid" style="grid-template-columns:minmax(300px,1fr) minmax(300px,1.1fr);align-items:stretch">
+    <div class="card">
+      <h3>Adopted Strategy</h3>
+      <div class="row"><span class="k">Entry</span><span class="v">VIX&gt;40 <b>or</b> weekly S&amp;P RSI(14)&lt;35 → buy TQQQ <b>+9 trading days</b> later</span></div>
+      <div class="row"><span class="k">Exit</span><span class="v">after a <b>≥1-year hold</b>, first S&amp;P close &lt; <b>MA50</b></span></div>
+      <div class="row"><span class="k">Catastrophe</span><span class="v">sell all if TQQQ falls <b>≤ −40%</b> in a single day</span></div>
+      <div class="row"><span class="k">Size</span><span class="v">full <b>3× TQQQ</b> · ≈30–40% of portfolio</span></div>
+    </div>
+    <div class="card" style="text-align:center;display:flex;flex-direction:column;justify-content:center">
+      <h3>Master Signal — VIX&gt;40 OR weekly RSI&lt;35</h3>
+      <div id="sigBig" class="big signal-armed">—</div>
+      <div id="sigLegs" class="muted"></div>
+    </div>
   </div>
 
   <div class="grid g3">
@@ -672,34 +684,54 @@ function localTradeAnnotations(D, t){
   for(let i=a;i<b;i++){ const v=D.tqqq[i]; if(v!=null){ if(v<lo)lo=v; if(v>hi)hi=v; } }
   if(!isFinite(lo)) return [];
   const span=(hi-lo)||1, at=i=>D.dates[Math.max(0,Math.min(N-1,i))];
-  const box=(x,y,bx,by,anchorX,text,color)=>({x:x,y:y,xref:'x',yref:'y',
-    ax:bx,ay:by,axref:'x',ayref:'y',xanchor:anchorX,yanchor:'middle',
+  const box=(x,y,bx,by,anchorX,yAnc,text,color)=>({x:x,y:y,xref:'x',yref:'y',
+    ax:bx,ay:by,axref:'x',ayref:'y',xanchor:anchorX,yanchor:yAnc,
     showarrow:true,arrowhead:2,arrowsize:1,arrowwidth:1.5,arrowcolor:color,
     bordercolor:color,borderwidth:1.5,borderpad:5,bgcolor:'rgba(255,255,255,0.94)',
     font:{color:color,size:10},align:'left',text:text});
-  const A=[], sigBase=si>=0?si:anchor-9, rx=at(anchor+40);   // entries hang under the recovery
-  if(si>=0 && D.tqqq[si]!=null)
-    A.push(box(t.signal_date,D.tqqq[si], at(sigBase-8), lo+span*0.04,'left',
+  const A=[], sigBase=si>=0?si:anchor-9, rx=at(anchor+16);   // entries hang under the recovery, near the V
+  if(si>=0 && D.tqqq[si]!=null)   // Signal box hangs just BELOW the V floor (yanchor top)
+    A.push(box(t.signal_date,D.tqqq[si], at(sigBase-3), lo-span*0.02,'left','top',
       '<b>Signal</b> '+t.signal_date+'<br>'+t.trigger, YH.sig));
-  A.push(box(e.plus3.date,e.plus3.price, rx, lo+span*0.40,'left',
+  A.push(box(e.plus3.date,e.plus3.price, rx, lo+span*0.40,'left','middle',
     '<b>+3d entry</b><br>'+e.plus3.date+'<br>$'+e.plus3.price, YH.p3));
-  A.push(box(e.plus9.date,e.plus9.price, rx, lo+span*0.24,'left',
+  A.push(box(e.plus9.date,e.plus9.price, rx, lo+span*0.24,'left','middle',
     '<b>+9d entry ✓</b> (adopted)<br>'+e.plus9.date+'<br>$'+e.plus9.price, YH.p9));
-  A.push(box(e.ma5.date, e.ma5.price, rx, lo+span*0.08,'left',
+  A.push(box(e.ma5.date, e.ma5.price, rx, lo+span*0.08,'left','middle',
     '<b>MA5 entry</b><br>'+e.ma5.date+'<br>$'+e.ma5.price, YH.ma5));
   return A;
 }
-/* Annotations for a visible window: the live price tag plus a callout group for
-   every trade whose cluster is in view — only when zoomed in enough (≤ ~1.4y) so
-   wide views (5Y/Max) stay uncluttered and show just markers. */
+/* Exit callout for a closed trade: box in the empty band above the exit point,
+   keyed to a local price band around the exit; arrowhead lands on the exit. */
+function exitBox(D, t){
+  if(!t || t.open) return null;
+  const N=D.dates.length, xi=D.dates.indexOf(t.exit_date);
+  if(xi<0) return null;
+  let lo=Infinity,hi=-Infinity;
+  for(let i=Math.max(0,xi-30);i<Math.min(N,xi+8);i++){ const v=D.tqqq[i];
+    if(v!=null){ if(v<lo)lo=v; if(v>hi)hi=v; } }
+  if(!isFinite(lo)) return null;
+  const span=(hi-lo)||1, at=i=>D.dates[Math.max(0,Math.min(N-1,i))];
+  return {x:t.exit_date, y:t.exit_price, xref:'x',yref:'y',
+    ax:at(xi-9), ay:hi+span*0.12, axref:'x',ayref:'y', xanchor:'left',yanchor:'middle',
+    showarrow:true,arrowhead:2,arrowsize:1,arrowwidth:1.5,arrowcolor:YH.exit,
+    bordercolor:YH.exit,borderwidth:1.5,borderpad:5,bgcolor:'rgba(255,255,255,0.94)',
+    font:{color:YH.exit,size:10},align:'left',
+    text:'<b>Exit</b> '+t.exit_date+'<br>$'+t.exit_price+' · '+(t.ret>=0?'+':'')+t.ret+'%'};
+}
+/* Annotations for a visible window: the live price tag, an entry-callout group
+   for every trade whose V is in view, and an exit callout for every closed trade
+   whose exit is in view — only when zoomed in enough (≤ ~1.4y) so wide views
+   (5Y/Max) stay uncluttered and show just markers. */
 function buildAnnotations(D, priceTag, x0, x1){
   const A = priceTag ? [priceTag] : [];
   const x0ms=new Date(x0).getTime(), x1ms=new Date(x1).getTime();
+  const inView=ds=>{ const t=new Date(ds).getTime(); return t>=x0ms&&t<=x1ms; };
   if((x1ms-x0ms)/86400000 <= 520)
     D.trades.forEach(t=>{
-      const s=new Date(t.signal_date).getTime();
-      const e9=t.entries? new Date(t.entries.plus9.date).getTime():s;
-      if((s>=x0ms&&s<=x1ms)||(e9>=x0ms&&e9<=x1ms)) A.push(...localTradeAnnotations(D,t));
+      if(inView(t.signal_date) || (t.entries && inView(t.entries.plus9.date)))
+        A.push(...localTradeAnnotations(D,t));
+      if(!t.open && inView(t.exit_date)){ const eb=exitBox(D,t); if(eb) A.push(eb); }
     });
   return A;
 }
@@ -718,6 +750,10 @@ function drawChart(D){
     mk(M.p9X,M.p9Y,M.p9T,'+9d ✓',YH.p9,'triangle-up',13),
     mk(M.m5X,M.m5Y,M.m5T,'MA5',YH.ma5,'diamond',10),
     mk(M.exX,M.exY,M.exT,'Exit',YH.exit,'triangle-down',12),
+    {x:dates,y:D.spx,mode:'lines',name:'S&P 500',line:{color:'#111',width:1.1},xaxis:'x',yaxis:'y4',
+      hovertemplate:'S&P %{y:.0f}<extra></extra>',showlegend:false},
+    {x:dates,y:D.spx_ma,mode:'lines',name:'S&P MA50 (exit)',line:{color:YH.exit,width:1.2,dash:'dot'},xaxis:'x',yaxis:'y4',
+      hovertemplate:'MA50 %{y:.0f}<extra></extra>',showlegend:false},
     {x:dates,y:D.vix,mode:'lines',name:'VIX',line:{color:'#c2410c',width:1.1},xaxis:'x',yaxis:'y2',
       hovertemplate:'VIX %{y:.1f}<extra></extra>',showlegend:false},
     {x:dates,y:D.rsi,mode:'lines',name:'S&P RSI(14)',line:{color:'#111',width:1.1},xaxis:'x',yaxis:'y3',
@@ -725,8 +761,8 @@ function drawChart(D){
 
   const lastDate=dates[dates.length-1];
   let lastClose=null; for(let i=D.tqqq.length-1;i>=0;i--){ if(D.tqqq[i]!=null){lastClose=D.tqqq[i];break;} }
-  const d3=new Date(lastDate); d3.setMonth(d3.getMonth()-3);
-  let rangeStart=d3.toISOString().slice(0,10);   // default 3M, but widen to show the triggered trade
+  const d3=new Date(lastDate); d3.setMonth(d3.getMonth()-6);
+  let rangeStart=d3.toISOString().slice(0,10);   // default 6M, but widen to show the triggered trade
   const trig=triggeredTrade(D);
   if(trig){ const s=new Date(trig.signal_date); s.setDate(s.getDate()-14);
     const ss=s.toISOString().slice(0,10); if(ss<rangeStart) rangeStart=ss; }
@@ -747,10 +783,11 @@ function drawChart(D){
         {count:1,label:'1Y',step:'year',stepmode:'backward'},
         {count:5,label:'5Y',step:'year',stepmode:'backward'},
         {step:'all',label:'Max'}]}},
-    yaxis:{domain:[0.40,1],side:'right',gridcolor:YH.grid,showspikes:true,spikemode:'across',
+    yaxis:{domain:[0.50,1],side:'right',gridcolor:YH.grid,showspikes:true,spikemode:'across',
       spikethickness:1,spikedash:'dot',spikecolor:'#9aa0a6',tickfont:{color:'#333'}},
-    yaxis2:{domain:[0.21,0.37],side:'right',gridcolor:YH.grid,title:{text:'VIX',font:{size:10}},tickfont:{color:'#333'}},
-    yaxis3:{domain:[0.02,0.18],side:'right',gridcolor:YH.grid,title:{text:'S&P RSI(14)',font:{size:10}},range:[10,95],tickfont:{color:'#333'}},
+    yaxis4:{domain:[0.34,0.46],side:'right',gridcolor:YH.grid,title:{text:'S&P·MA50',font:{size:10}},tickfont:{color:'#333'}},
+    yaxis2:{domain:[0.18,0.30],side:'right',gridcolor:YH.grid,title:{text:'VIX',font:{size:10}},tickfont:{color:'#333'}},
+    yaxis3:{domain:[0.02,0.14],side:'right',gridcolor:YH.grid,title:{text:'S&P RSI(14)',font:{size:10}},range:[10,95],tickfont:{color:'#333'}},
     shapes:[
       {type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:D.thresholds.vix,y1:D.thresholds.vix,line:{color:YH.down,width:1,dash:'dash'}},
       {type:'rect',xref:'paper',x0:0,x1:1,yref:'y2',y0:D.thresholds.vix,y1:100,fillcolor:'rgba(225,29,72,0.06)',line:{width:0}},
@@ -764,7 +801,8 @@ function drawChart(D){
   const gd=document.getElementById('chart');
   Plotly.react(gd,traces,layout,{scrollZoom:true,responsive:true,displaylogo:false,
     modeBarButtonsToRemove:['lasso2d','select2d']}).then(()=>{
-    CHART={dates:dates,tqqq:D.tqqq,low:D.tqqq_low,high:D.tqqq_high,vix:D.vix,rsi:D.rsi,gd:gd,D:D,priceTag:priceTag};
+    CHART={dates:dates,tqqq:D.tqqq,low:D.tqqq_low,high:D.tqqq_high,vix:D.vix,rsi:D.rsi,
+      spx:D.spx,spxma:D.spx_ma,gd:gd,D:D,priceTag:priceTag};
     autoscaleY(false);
     document.getElementById('lastpx').textContent = lastClose==null?'':('$'+Number(lastClose).toFixed(2));
     gd.removeAllListeners && gd.removeAllListeners('plotly_relayout');
@@ -782,15 +820,18 @@ function autoscaleY(full){
   let x0=-Infinity,x1=Infinity;
   if(!full){ const xr=C.gd.layout.xaxis&&C.gd.layout.xaxis.range;
     if(xr){ x0=new Date(xr[0]).getTime(); x1=new Date(xr[1]).getTime(); } }
-  let pl=Infinity,ph=-Infinity,vl=Infinity,vh=-Infinity;
+  let pl=Infinity,ph=-Infinity,vl=Infinity,vh=-Infinity,sl=Infinity,sh=-Infinity;
   for(let i=0;i<C.dates.length;i++){ const tm=new Date(C.dates[i]).getTime();
     if(tm<x0||tm>x1) continue;
     const lo=C.low[i],hi=C.high[i]; if(lo!=null&&lo<pl)pl=lo; if(hi!=null&&hi>ph)ph=hi;
-    const v=C.vix[i]; if(v!=null){if(v<vl)vl=v;if(v>vh)vh=v;} }
+    const v=C.vix[i]; if(v!=null){if(v<vl)vl=v;if(v>vh)vh=v;}
+    const s=C.spx[i],sm=C.spxma[i];
+    if(s!=null){if(s<sl)sl=s;if(s>sh)sh=s;} if(sm!=null){if(sm<sl)sl=sm;if(sm>sh)sh=sm;} }
   if(!isFinite(pl)||!isFinite(ph)) return;
-  const upd={'yaxis.range':[pl*0.96,ph*1.04]};
+  const upd={'yaxis.range':[pl*0.90,ph*1.04]};   // extra bottom room for the Signal box under the V
   if(isFinite(vl)){ const lo=Math.min(vl,40),hi=Math.max(vh,40),p=Math.max(1,(hi-lo)*0.1);
     upd['yaxis2.range']=[Math.max(0,lo-p),hi+p]; }
+  if(isFinite(sl)){ const p=Math.max(1,(sh-sl)*0.06); upd['yaxis4.range']=[sl-p,sh+p]; }
   const xr=C.gd.layout.xaxis&&C.gd.layout.xaxis.range;   // rebuild callouts for the visible trade(s)
   if(xr) upd['annotations']=buildAnnotations(C.D, C.priceTag, xr[0], xr[1]);
   scaling=true; Plotly.relayout(C.gd,upd).then(()=>{scaling=false;});
