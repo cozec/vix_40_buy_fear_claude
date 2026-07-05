@@ -847,10 +847,21 @@ setInterval(tick, 45000);
 """
 
 
+def ensure_data():
+    """On a fresh host (e.g. cloud deploy) the gitignored data/ CSVs are absent —
+    download them synchronously before serving so the first request has data."""
+    if all(os.path.exists(p) for p in _paths().values()):
+        return
+    print("[startup] data CSVs missing — downloading from Yahoo...")
+    download_data.main()
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "127.0.0.1")   # set HOST=0.0.0.0 on a cloud host
+    ensure_data()
     if AUTO_UPDATE:
         threading.Thread(target=_daily_updater, daemon=True).start()  # daily CSV self-refresh
         print(f"Auto-update: CSVs refresh daily at {UPDATE_HOUR:02d}:00 ET (AUTO_UPDATE=0 to disable)")
     print(f"Live dashboard -> http://localhost:{port}  (Ctrl-C to stop)")
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host=host, port=port, debug=False, threaded=True)

@@ -1,0 +1,16 @@
+# Render Blueprint — deploy the live VIX>40 "buy the fear" dashboard.
+# In Render: New > Blueprint > pick this repo. Free tier; idle spin-down (~30s cold start).
+services:
+  - type: web
+    name: vix-40-buy-fear
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python src/live_dashboard.py
+    envVars:
+      - key: HOST
+        value: "0.0.0.0"        # bind all interfaces so Render can route to it
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      - key: AUTO_UPDATE
+        value: "1"              # refresh CSVs on boot + daily
