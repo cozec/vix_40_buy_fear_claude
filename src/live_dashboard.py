@@ -30,12 +30,12 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 from flask import Flask, render_template_string, jsonify
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import backtest as bt  # noqa: E402
-import download_data  # noqa: E402
+# yfinance / download_data are imported lazily (only when live quotes or a data
+# refresh is actually needed) — keeps startup fast and memory low on small hosts.
 
 socket.setdefaulttimeout(8)  # cap any yfinance hang
 
@@ -47,6 +47,7 @@ ENTRY_OFFSET = int(os.environ.get("ENTRY_OFFSET", "9"))
 CONFIRM_MA, CONFIRM_CAP = 5, 20
 QUOTE_TTL = 45                 # seconds; browser polls at the same cadence
 AUTO_UPDATE = os.environ.get("AUTO_UPDATE", "1") != "0"   # daily CSV self-refresh
+LIVE_QUOTES = os.environ.get("LIVE_QUOTES", "1") != "0"   # set 0 where Yahoo is blocked (cloud)
 UPDATE_HOUR = int(os.environ.get("UPDATE_HOUR", "18"))    # 18:00 ET (after close)
 EASTERN = ZoneInfo("America/New_York")
 TICKERS = ("^VIX", "TQQQ", "^GSPC", "QQQ")
@@ -94,23 +95,27 @@ def live_quotes(frames):
         return _QUOTE_CACHE["data"]
 
     quotes, any_live = {}, False
+    yf = None
+    if LIVE_QUOTES:
+        import yfinance as yf  # lazy: only load the heavy client when live quotes are on
     for t in TICKERS:
         last = prev = None
         src = "csv_fallback"
-        try:                                   # tier 1: fast_info
-            fi = yf.Ticker(t).fast_info
-            last = float(fi.last_price)
-            prev = float(fi.previous_close)
-            src, any_live = "live", True
-        except Exception:
-            try:                               # tier 2: 1-minute history
-                h = yf.Ticker(t).history(period="2d", interval="1m")
-                c = h["Close"].dropna()
-                if len(c):
-                    last = float(c.iloc[-1])
-                    src, any_live = "live_1m", True
+        if yf is not None:
+            try:                               # tier 1: fast_info
+                fi = yf.Ticker(t).fast_info
+                last = float(fi.last_price)
+                prev = float(fi.previous_close)
+                src, any_live = "live", True
             except Exception:
-                pass
+                try:                           # tier 2: 1-minute history
+                    h = yf.Ticker(t).history(period="2d", interval="1m")
+                    c = h["Close"].dropna()
+                    if len(c):
+                        last = float(c.iloc[-1])
+                        src, any_live = "live_1m", True
+                except Exception:
+                    pass
         fr = frames.get(CSV_MAP.get(t))        # tier 3: last CSV close
         if fr is not None and len(fr):
             if last is None:
@@ -154,6 +159,7 @@ def _daily_updater():
     """Background daemon: refresh the CSVs now if stale, then daily at UPDATE_HOUR ET."""
     def refresh(tag):
         try:
+            import download_data
             download_data.main()
             _DERIVED_CACHE.update(key=None, data=None)   # force recompute next request
             print(f"[auto-update] {tag} CSV refresh done {datetime.now(EASTERN):%Y-%m-%d %H:%M ET}")
@@ -336,7 +342,10 @@ def build_state():
 
 # --- history payload (context chart) --------------------------------------
 def _series(s):
-    return [None if pd.isna(v) else round(float(v), 4) for v in s]
+    # Vectorized round + NaN->None; ~10-50x faster than a per-element pandas loop
+    # (matters a lot for the full-history payload on small-CPU hosts).
+    vals = np.round(np.asarray(s, dtype="float64"), 4).tolist()
+    return [None if v != v else v for v in vals]   # v!=v is a fast NaN test
 
 
 def _entry_candidates(close, ma5, all_dates, sig_date):
@@ -364,10 +373,11 @@ def build_history(window=None):
     sig, trades = d["sig"], d["trades"]
     df = sig if window is None else sig.iloc[-window:]   # None = full history (2010→now)
     tqqq = frames["tqqq"].reindex(df.index)
-    dates = [x.strftime("%Y-%m-%d") for x in df.index]
+    dates = df.index.strftime("%Y-%m-%d").tolist()   # vectorized
     start = df.index[0]
-    holidays = [x.strftime("%Y-%m-%d")
-                for x in pd.bdate_range(start, df.index[-1]) if x not in set(df.index)]
+    idx_set = set(df.index)                          # build once (was rebuilt per iteration!)
+    holidays = [d.strftime("%Y-%m-%d")
+                for d in pd.bdate_range(start, df.index[-1]) if d not in idx_set]
 
     close_full = frames["tqqq"]["Close"]
     ma5_full = close_full.rolling(CONFIRM_MA).mean()
@@ -453,6 +463,8 @@ PAGE = r"""<!DOCTYPE html>
   .row:last-child{border-bottom:none}
   .row .k{color:var(--muted)}
   .row .v{flex:1;text-align:right}
+  .card.strat{border-color:rgba(240,136,62,.55);background:rgba(240,136,62,.08)}
+  .card.strat h3{color:var(--accent)}
   .pos{color:var(--green)} .neg{color:var(--red)} .hot{color:var(--accent)} .amber{color:var(--amber)}
   .big{font-size:30px;font-weight:800;letter-spacing:.5px}
   .signal-firing{color:var(--red);animation:pulse 1.3s ease-in-out infinite}
@@ -495,7 +507,7 @@ PAGE = r"""<!DOCTYPE html>
   </div>
 
   <div class="grid" style="grid-template-columns:minmax(300px,1fr) minmax(300px,1.1fr);align-items:stretch">
-    <div class="card">
+    <div class="card strat">
       <h3>Adopted Strategy</h3>
       <div class="row"><span class="k">Entry</span><span class="v">VIX&gt;40 <b>or</b> weekly S&amp;P RSI(14)&lt;35 → buy TQQQ <b>+9 trading days</b> later</span></div>
       <div class="row"><span class="k">Exit</span><span class="v">after a <b>≥1-year hold</b>, first S&amp;P close &lt; <b>MA50</b></span></div>
@@ -854,6 +866,7 @@ def ensure_data():
         return
     print("[startup] data CSVs missing — downloading from Yahoo...")
     try:
+        import download_data
         download_data.main()
     except Exception as e:   # don't crash the deploy; the daily updater will retry
         print(f"[startup] data download failed: {e} — will retry via daily updater")

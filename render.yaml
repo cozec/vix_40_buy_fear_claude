@@ -14,3 +14,5 @@ services:
         value: "3.13.4"
       - key: AUTO_UPDATE
         value: "0"              # Yahoo blocks datacenter IPs; serve the committed seed CSVs
+      - key: LIVE_QUOTES
+        value: "0"              # skip yfinance entirely on cloud (blocked) — faster boot, less RAM
